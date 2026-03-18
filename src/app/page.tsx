@@ -1,63 +1,69 @@
-import Image from "next/image";
+'use client';
+
+import { useState, useEffect } from 'react';
+import { Header } from '@/components/header';
+import { SummaryCard } from '@/components/summary-card';
+import { Calendar } from '@/components/calendar';
+import { ToggleRegion } from '@/components/toggle-region';
+import { LongWeekendList } from '@/components/long-weekend-list';
+import { CutiPlanner } from '@/components/cuti-planner';
+import { ExportControls } from '@/components/export-controls';
+import { TimezoneInfo } from '@/components/timezone-info';
+import { mockHolidays } from '@/lib/mock-data';
+import { Holiday } from '@/lib/date-utils';
 
 export default function Home() {
+  const [holidays, setHolidays] = useState<Holiday[]>([]);
+  const [regionFilter, setRegionFilter] = useState<string | undefined>();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    // Parse holiday dates
+    const parsedHolidays = mockHolidays.map(h => ({
+      ...h,
+      date: new Date(h.date),
+    }));
+    setHolidays(parsedHolidays);
+  }, []);
+
+  if (!mounted) {
+    return null;
+  }
+
+  // Filter holidays based on region
+  const filteredHolidays = holidays.filter(h => {
+    if (!regionFilter) return true;
+    if (regionFilter === 'national') return h.type === 'national';
+    return h.type === 'national' || (h.type === 'regional' && h.region === regionFilter);
+  });
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 transition-colors">
+      <Header />
+
+      <main className="max-w-6xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Column */}
+          <div className="lg:col-span-2 space-y-6">
+            <SummaryCard holidays={filteredHolidays} regionFilter={regionFilter} />
+            <Calendar holidays={filteredHolidays} regionFilter={regionFilter} />
+          </div>
+
+          {/* Right Column */}
+          <div className="lg:col-span-1 space-y-6">
+            <ToggleRegion regionFilter={regionFilter} onToggle={setRegionFilter} />
+            <TimezoneInfo />
+            <ExportControls />
+            <LongWeekendList holidays={filteredHolidays} regionFilter={regionFilter} />
+            <CutiPlanner holidays={filteredHolidays} regionFilter={regionFilter} />
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        {/* Footer Info */}
+        <div className="mt-12 text-center text-sm text-gray-600 dark:text-gray-400">
+          <p>🇮🇩 Hari Libur Indonesia - Papua Barat Daya</p>
+          <p className="mt-1">Data libur diperbarui untuk tahun 2026</p>
         </div>
       </main>
     </div>
