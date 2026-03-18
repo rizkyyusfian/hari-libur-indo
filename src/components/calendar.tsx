@@ -11,7 +11,6 @@ interface CalendarProps {
 
 export function Calendar({ holidays, regionFilter }: CalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [view, setView] = useState<'month' | 'week'>('month');
 
   const getDaysInMonth = (date: Date) => {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();

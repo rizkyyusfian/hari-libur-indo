@@ -1,6 +1,6 @@
 'use client';
 
-import { Moon, Sun, Menu, LogIn } from 'lucide-react';
+import { Moon, Sun, LogIn } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { LanguageSwitcher } from './language-switcher';
@@ -10,9 +10,9 @@ export function Header() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
     const isDarkMode = document.documentElement.classList.contains('dark');
     setIsDark(isDarkMode);
+    setMounted(true);
   }, []);
 
   const toggleDarkMode = () => {

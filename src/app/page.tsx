@@ -18,13 +18,13 @@ export default function Home() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
     // Parse holiday dates
     const parsedHolidays = mockHolidays.map(h => ({
       ...h,
       date: new Date(h.date),
     }));
     setHolidays(parsedHolidays);
+    setMounted(true);
   }, []);
 
   if (!mounted) {

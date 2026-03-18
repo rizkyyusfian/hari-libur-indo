@@ -1,6 +1,6 @@
 'use client';
 
-import { Download, FileJson } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { useState } from 'react';
 import { exportAsImage, exportAsPDF } from '@/lib/export-utils';
 
