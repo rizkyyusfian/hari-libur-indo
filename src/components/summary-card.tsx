@@ -41,35 +41,35 @@ export function SummaryCard({ holidays, regionFilter }: SummaryCardProps) {
   if (!mounted) return null;
 
   return (
-    <div className="bg-gradient-to-br from-purple-100 via-pink-100 to-blue-100 dark:from-purple-900/40 dark:via-pink-900/40 dark:to-blue-900/40 rounded-lg border-2 border-purple-200 dark:border-purple-700/50 p-6 shadow-lg backdrop-blur-sm">
+    <div className="bg-cream dark:bg-darkblue/30 rounded-lg border-4 border-burgundy dark:border-darkred p-6 shadow-lg">
       <div className="space-y-4">
         {/* Today Status */}
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-sm font-semibold text-purple-700 dark:text-purple-300">Status Hari Ini</p>
+            <p className="text-sm font-semibold text-burgundy dark:text-lightblue">Status Hari Ini</p>
             {todayHoliday ? (
-              <p className="text-lg font-bold text-pink-600 dark:text-pink-300">
+              <p className="text-lg font-bold text-darkred dark:text-lightblue">
                 🎉 {todayHoliday.name}
               </p>
             ) : (
-              <p className="text-lg font-bold text-purple-600 dark:text-purple-300">
+              <p className="text-lg font-bold text-burgundy dark:text-cream">
                 📅 Hari Kerja Biasa
               </p>
             )}
           </div>
-          <Calendar className="text-purple-500 dark:text-purple-400" size={24} />
+          <Calendar className="text-burgundy dark:text-lightblue" size={24} />
         </div>
 
         {/* Timezone Info */}
-        <div className="bg-white/60 dark:bg-slate-800/60 rounded-lg p-3 border border-purple-200 dark:border-purple-700/50">
+        <div className="bg-lightblue/30 dark:bg-lightblue/20 rounded-lg p-3 border-2 border-lightblue">
           <div className="flex items-center gap-2 mb-2">
-            <Clock size={16} className="text-blue-500 dark:text-blue-400" />
-            <p className="text-xs font-semibold text-purple-700 dark:text-purple-300">Zona Waktu Anda</p>
+            <Clock size={16} className="text-darkblue dark:text-lightblue" />
+            <p className="text-xs font-bold text-darkblue dark:text-lightblue">Zona Waktu Anda</p>
           </div>
-          <p className="text-sm font-mono font-semibold text-purple-900 dark:text-purple-100">
+          <p className="text-sm font-mono font-bold text-darkblue dark:text-cream">
             {time}
           </p>
-          <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">
+          <p className="text-xs text-darkblue dark:text-lightblue mt-1 font-semibold">
             {timezone === 'WIB' && '🏛️ Waktu Indonesia Bagian Barat (Pulau Jawa)'}
             {timezone === 'WITA' && '🏝️ Waktu Indonesia Bagian Tengah (Sulawesi, Bali)'}
             {timezone === 'WIT' && '🗻 Waktu Indonesia Bagian Timur (Papua, Maluku)'}
@@ -78,38 +78,38 @@ export function SummaryCard({ holidays, regionFilter }: SummaryCardProps) {
 
         {/* Next Off Period */}
         {nextOffPeriod && (
-          <div className="bg-white/60 dark:bg-slate-800/60 rounded-lg p-3 border-2 border-pink-200 dark:border-pink-700/50">
-            <p className="text-sm font-semibold text-purple-700 dark:text-purple-300">
+          <div className="bg-lightblue/30 dark:bg-lightblue/20 rounded-lg p-3 border-2 border-lightblue">
+            <p className="text-sm font-bold text-darkblue dark:text-lightblue">
               {nextOffPeriod.type === 'long-weekend' ? '📅 Long Weekend Terdekat' : '🏖️ Hari Libur Terdekat'}
             </p>
-            <p className="text-base font-bold text-pink-600 dark:text-pink-300 mt-1">
+            <p className="text-base font-bold text-darkred dark:text-lightblue mt-1">
               {nextOffPeriod.type === 'long-weekend'
                 ? `${formatDateIndonesian((nextOffPeriod.details as any).start)} - ${(nextOffPeriod.details as any).length} hari`
                 : formatDateIndonesian((nextOffPeriod.details as Holiday).date)}
             </p>
-            <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">
+            <p className="text-xs text-darkblue dark:text-lightblue mt-1 font-semibold">
               Tinggal {nextOffPeriod.daysUntil} hari lagi
             </p>
           </div>
         )}
 
         {/* Roast Message */}
-        <div className="bg-white/60 dark:bg-slate-800/60 rounded-lg p-3 border-2 border-blue-200 dark:border-blue-700/50 flex items-start gap-3">
-          <Smile className="text-blue-500 dark:text-blue-400 flex-shrink-0 mt-1" size={20} />
-          <p className="text-sm font-medium text-purple-700 dark:text-purple-300">{roastMessage}</p>
+        <div className="bg-darkred dark:bg-darkred/40 rounded-lg p-3 border-2 border-darkred flex items-start gap-3">
+          <Smile className="text-cream dark:text-cream flex-shrink-0 mt-1" size={20} />
+          <p className="text-sm font-bold text-cream dark:text-cream">{roastMessage}</p>
         </div>
 
         {/* Quick Stats */}
         <div className="grid grid-cols-2 gap-3 pt-2">
-          <div className="bg-white/60 dark:bg-slate-800/60 rounded-lg p-3 border border-blue-200 dark:border-blue-700/50">
-            <p className="text-xs text-purple-600 dark:text-purple-400 font-medium">Hari Kerja Tersisa</p>
-            <p className="text-lg font-bold text-blue-600 dark:text-blue-300 mt-1">
+          <div className="bg-lightblue/30 dark:bg-lightblue/20 rounded-lg p-3 border-2 border-lightblue">
+            <p className="text-xs text-darkblue dark:text-lightblue font-bold">Hari Kerja Tersisa</p>
+            <p className="text-lg font-bold text-darkblue dark:text-lightblue mt-1">
               {Math.max(0, 365 - daysUntil)} hari
             </p>
           </div>
-          <div className="bg-white/60 dark:bg-slate-800/60 rounded-lg p-3 border border-pink-200 dark:border-pink-700/50">
-            <p className="text-xs text-purple-600 dark:text-purple-400 font-medium">Total Libur</p>
-            <p className="text-lg font-bold text-pink-600 dark:text-pink-300 mt-1">
+          <div className="bg-darkred/30 dark:bg-darkred/20 rounded-lg p-3 border-2 border-darkred">
+            <p className="text-xs text-darkred dark:text-lightblue font-bold">Total Libur</p>
+            <p className="text-lg font-bold text-darkred dark:text-lightblue mt-1">
               {holidays.length} hari
             </p>
           </div>

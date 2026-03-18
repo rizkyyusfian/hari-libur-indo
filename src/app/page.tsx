@@ -38,7 +38,7 @@ export default function Home() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:bg-gradient-to-br dark:from-slate-900 dark:via-purple-900 dark:to-slate-900 transition-colors">
+    <div className="min-h-screen bg-cream dark:bg-darkblue">
       <Header />
 
       <main className="max-w-7xl mx-auto px-4 py-8">
@@ -53,14 +53,14 @@ export default function Home() {
 
           {/* Right Column - Sidebar */}
           <div className="lg:col-span-1 space-y-6">
-            <ToggleRegion regionFilter={regionFilter} onToggle={setRegionFilter} />
+            <ToggleRegion regions={['national', 'Papua Barat Daya', 'Jawa', 'Sumatera', 'Kalimantan', 'Sulawesi', 'Nusa Tenggara', 'Maluku']} onChange={setRegionFilter} value={regionFilter} />
             <ExportControls />
           </div>
         </div>
 
         {/* Footer Info */}
-        <div className="mt-12 text-center text-sm text-purple-600 dark:text-purple-300">
-          <p>🇮🇩 Hari Libur Indonesia - Papua Barat Daya</p>
+        <div className="mt-12 text-center text-sm text-burgundy dark:text-lightblue">
+          <p className="font-semibold">🇮🇩 Hari Libur Indonesia - Papua Barat Daya</p>
           <p className="mt-1">Data libur diperbarui untuk tahun 2026</p>
         </div>
       </main>

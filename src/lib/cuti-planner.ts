@@ -24,7 +24,7 @@ export const planCuti = (cutiDays: number, holidays: Holiday[], from?: Date, reg
     // Find sequences of off days
     const sequenceStart = new Date(date);
     let sequenceEnd = new Date(date);
-    let gap = 0;
+    const gap = 0;
 
     while (gap < cutiDays - used && isBefore(sequenceEnd, endDate)) {
       const nextDay = addDays(sequenceEnd, 1);

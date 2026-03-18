@@ -4,34 +4,42 @@ import { Moon, Sun, LogIn } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { LanguageSwitcher } from './language-switcher';
-import { setTheme, getTheme } from '@/lib/theme';
 
 export function Header() {
   const [isDark, setIsDark] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const theme = getTheme();
-    setIsDark(theme === 'dark');
+    const isDarkMode = document.documentElement.classList.contains('dark');
+    setIsDark(isDarkMode);
     setMounted(true);
   }, []);
 
   const toggleDarkMode = () => {
-    const newTheme = isDark ? 'light' : 'dark';
-    setIsDark(!isDark);
-    setTheme(newTheme);
+    const root = document.documentElement;
+    const newIsDark = !isDark;
+    
+    if (newIsDark) {
+      root.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      root.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+    
+    setIsDark(newIsDark);
   };
 
   if (!mounted) return null;
 
   return (
-    <header className="bg-white dark:bg-gradient-to-r dark:from-slate-900 dark:to-slate-800 border-b border-purple-200 dark:border-purple-900/30 shadow-sm">
+    <header className="bg-cream dark:bg-darkblue border-b-4 border-burgundy dark:border-darkred shadow-sm">
       <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
         <div className="flex items-center gap-2">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">
+          <h1 className="text-2xl font-bold text-burgundy dark:text-cream">
             🇮🇩 Hari Libur Indo
           </h1>
-          <p className="text-sm text-purple-600 dark:text-purple-300 hidden sm:block">
+          <p className="text-sm text-darkred dark:text-lightblue hidden sm:block font-semibold">
             Papua Barat Daya
           </p>
         </div>
@@ -39,20 +47,20 @@ export function Header() {
         <div className="flex items-center gap-2">
           <LanguageSwitcher />
 
-          <Link href="/admin" className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/30 transition">
+          <Link href="/admin" className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-cream dark:text-cream bg-burgundy dark:bg-darkred hover:opacity-80 transition">
             <LogIn size={18} />
             <span className="hidden sm:inline">Admin</span>
           </Link>
 
           <button
             onClick={toggleDarkMode}
-            className="p-2 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/30 transition"
+            className="p-2 rounded-lg hover:bg-burgundy/20 dark:hover:bg-lightblue/20 transition text-burgundy dark:text-lightblue"
             aria-label="Toggle theme"
           >
             {isDark ? (
-              <Sun size={20} className="text-amber-400" />
+              <Sun size={20} />
             ) : (
-              <Moon size={20} className="text-purple-600" />
+              <Moon size={20} />
             )}
           </button>
         </div>

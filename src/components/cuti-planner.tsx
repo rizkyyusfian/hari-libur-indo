@@ -11,79 +11,91 @@ interface CutiPlannerProps {
 }
 
 export function CutiPlanner({ holidays, regionFilter }: CutiPlannerProps) {
-  const [cutiDays, setCutiDays] = useState(5);
-  const recommendations = planCuti(cutiDays, holidays, undefined, regionFilter);
-  const totalEstimate = estimateTotalDaysOff(cutiDays, holidays, undefined, regionFilter);
+  const [cutiDays, setCutiDays] = useState('5');
+  const cutiDaysNum = Math.max(1, Math.min(30, parseInt(cutiDays) || 0));
+  const recommendations = planCuti(cutiDaysNum, holidays, undefined, regionFilter);
+  const totalEstimate = estimateTotalDaysOff(cutiDaysNum, holidays, undefined, regionFilter);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value === '' || /^\d+$/.test(value)) {
+      setCutiDays(value === '' ? '0' : value);
+    }
+  };
 
   return (
-    <div className="bg-white dark:bg-slate-800/50 rounded-lg border-2 border-purple-200 dark:border-purple-700/50 p-4 shadow-lg backdrop-blur-sm">
+    <div className="bg-cream dark:bg-darkblue/30 rounded-lg border-4 border-burgundy dark:border-darkred p-4 shadow-lg">
       <div className="flex items-center gap-2 mb-4">
-        <Zap size={18} className="text-purple-500 dark:text-purple-400" />
-        <h3 className="font-bold text-purple-700 dark:text-purple-300">Cuti Planner</h3>
+        <Zap size={18} className="text-darkred dark:text-lightblue" />
+        <h3 className="font-bold text-burgundy dark:text-cream text-lg">Cuti Planner</h3>
       </div>
 
       <div className="space-y-4">
         {/* Input */}
         <div>
-          <label className="block text-sm font-bold text-purple-700 dark:text-purple-300 mb-2">
+          <label className="block text-sm font-bold text-burgundy dark:text-cream mb-2">
             Berapa hari cuti yang kamu punya?
           </label>
-          <input
-            type="range"
-            min="1"
-            max="30"
-            value={cutiDays}
-            onChange={e => setCutiDays(parseInt(e.target.value))}
-            className="w-full accent-purple-600 dark:accent-pink-500"
-          />
+          <div className="flex gap-2 items-center">
+            <input
+              type="number"
+              min="1"
+              max="30"
+              value={cutiDays}
+              onChange={handleChange}
+              className="flex-1 px-3 py-2 rounded-lg border-2 border-burgundy dark:border-darkred bg-cream dark:bg-darkblue text-burgundy dark:text-cream font-bold text-center"
+              placeholder="Masukkan jumlah hari"
+            />
+            <span className="text-sm font-bold text-burgundy dark:text-cream">hari</span>
+          </div>
           <div className="flex justify-between items-center mt-2">
-            <span className="text-sm font-bold text-purple-600 dark:text-purple-400">Cuti: {cutiDays} hari</span>
-            <span className="text-sm font-bold text-pink-600 dark:text-pink-400">
+            <span className="text-xs text-burgundy dark:text-lightblue font-semibold">Cuti: {cutiDaysNum} hari</span>
+            <span className="text-sm font-bold text-darkred dark:text-lightblue">
               📅 Potensi: {totalEstimate} hari off
             </span>
           </div>
         </div>
 
         {/* Estimate Card */}
-        {totalEstimate > 0 && (
-          <div className="bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 rounded-lg p-3 border-2 border-green-300 dark:border-green-700/50 flex items-center gap-3">
-            <TrendingUp className="text-green-600 dark:text-green-400 flex-shrink-0" size={20} />
+        {totalEstimate > 0 && cutiDaysNum > 0 && (
+          <div className="bg-darkred dark:bg-darkred/40 rounded-lg p-3 border-2 border-darkred flex items-center gap-3">
+            <TrendingUp className="text-cream dark:text-cream flex-shrink-0" size={20} />
             <div>
-              <p className="text-sm font-bold text-green-700 dark:text-green-300">
+              <p className="text-sm font-bold text-cream dark:text-cream">
                 Maksimalkan liburan! 🎉
               </p>
-              <p className="text-xs text-green-600 dark:text-green-400 font-medium">
-                {cutiDays} hari cuti bisa menjadi {totalEstimate} hari off jika direncanakan dengan baik
+              <p className="text-xs text-cream/90 dark:text-cream/80 font-medium">
+                {cutiDaysNum} hari cuti bisa menjadi {totalEstimate} hari off jika direncanakan dengan baik
               </p>
             </div>
           </div>
         )}
 
         {/* Recommendations */}
-        {recommendations.length > 0 ? (
+        {cutiDaysNum > 0 && recommendations.length > 0 ? (
           <div className="space-y-2">
-            <p className="text-sm font-bold text-purple-700 dark:text-purple-300">💡 Rekomendasi Cuti:</p>
+            <p className="text-sm font-bold text-burgundy dark:text-cream">💡 Rekomendasi Cuti:</p>
             {recommendations.map((rec, idx) => (
-              <div key={idx} className="bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 rounded-lg p-2 border-2 border-purple-200 dark:border-purple-700/50">
-                <p className="text-xs font-bold text-purple-700 dark:text-purple-300 mb-1">
+              <div key={idx} className="bg-lightblue/30 dark:bg-lightblue/20 rounded-lg p-3 border-2 border-lightblue">
+                <p className="text-xs font-bold text-darkblue dark:text-lightblue mb-1">
                   Opsi {idx + 1}: {rec.totalDaysOff} hari off
                 </p>
-                <p className="text-xs text-purple-600 dark:text-purple-400 font-medium mb-1">
+                <p className="text-xs text-darkblue dark:text-lightblue font-semibold mb-1">
                   {rec.reason}
                 </p>
-                <p className="text-xs text-pink-600 dark:text-pink-400 font-bold">
+                <p className="text-xs text-darkblue dark:text-lightblue font-bold">
                   {rec.dates.map(d => formatDateIndonesian(d)).join(', ')}
                 </p>
               </div>
             ))}
           </div>
-        ) : (
-          <p className="text-sm text-purple-600 dark:text-purple-400 text-center py-4 font-medium">
+        ) : cutiDaysNum > 0 ? (
+          <p className="text-sm text-burgundy dark:text-cream text-center py-4 font-semibold">
             Tidak ada rekomendasi untuk saat ini
           </p>
-        )}
+        ) : null}
 
-        <p className="text-xs text-purple-600 dark:text-purple-400 pt-2 border-t border-purple-200 dark:border-purple-700/50 font-medium">
+        <p className="text-xs text-burgundy dark:text-lightblue pt-2 border-t-2 border-burgundy dark:border-darkred font-semibold">
           🎯 Tip: Ambil cuti sebelum atau sesudah hari libur untuk memaksimalkan waktu istirahat!
         </p>
       </div>

@@ -1,58 +1,47 @@
 'use client';
 
-import { Zap } from 'lucide-react';
+import { useState } from 'react';
+import { MapPin } from 'lucide-react';
 
 interface ToggleRegionProps {
-  regionFilter?: string;
-  onToggle: (region?: string) => void;
+  regions: string[];
+  onChange: (region: string) => void;
+  value?: string;
 }
 
-export function ToggleRegion({ regionFilter, onToggle }: ToggleRegionProps) {
+export function ToggleRegion({ regions, onChange, value }: ToggleRegionProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
-    <div className="bg-white dark:bg-slate-800/50 rounded-lg border-2 border-purple-200 dark:border-purple-700/50 p-4 shadow-lg backdrop-blur-sm">
-      <div className="flex items-center gap-2 mb-3">
-        <Zap size={18} className="text-purple-500 dark:text-purple-400" />
-        <h3 className="font-bold text-purple-700 dark:text-purple-300">Filter Libur</h3>
-      </div>
+    <div className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="px-4 py-2 rounded-lg border-2 border-burgundy dark:border-darkred bg-cream dark:bg-darkblue text-burgundy dark:text-cream font-bold hover:bg-burgundy/10 dark:hover:bg-darkred/10 transition flex items-center gap-2"
+      >
+        <MapPin size={18} />
+        {value || 'Pilih Wilayah'}
+      </button>
 
-      <div className="flex flex-col gap-2">
-        <button
-          onClick={() => onToggle(undefined)}
-          className={`px-4 py-2 rounded-lg font-semibold transition ${
-            !regionFilter
-              ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
-              : 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-900/50'
-          }`}
-        >
-          🇮🇩 Nasional + Regional
-        </button>
-
-        <button
-          onClick={() => onToggle('national')}
-          className={`px-4 py-2 rounded-lg font-semibold transition ${
-            regionFilter === 'national'
-              ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
-              : 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-900/50'
-          }`}
-        >
-          🏛️ Nasional Saja
-        </button>
-
-        <button
-          onClick={() => onToggle('papua_barat_daya')}
-          className={`px-4 py-2 rounded-lg font-semibold transition ${
-            regionFilter === 'papua_barat_daya'
-              ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
-              : 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-900/50'
-          }`}
-        >
-          🏝️ Papua Barat Daya
-        </button>
-      </div>
-
-      <p className="text-xs text-purple-600 dark:text-purple-400 mt-3 font-medium">
-        💡 Pilih filter untuk melihat hari libur sesuai kebutuhan
-      </p>
+      {isOpen && (
+        <div className="absolute top-12 left-0 z-50 bg-cream dark:bg-darkblue border-2 border-burgundy dark:border-darkred rounded-lg shadow-xl p-2 space-y-1 min-w-max">
+          {regions.map(region => (
+            <button
+              key={region}
+              onClick={() => {
+                onChange(region);
+                setIsOpen(false);
+              }}
+              className={`block w-full text-left px-3 py-2 rounded-lg font-bold transition ${
+                value === region
+                  ? 'bg-darkred dark:bg-darkred/40 text-cream dark:text-cream'
+                  : 'bg-cream dark:bg-darkblue text-burgundy dark:text-cream hover:bg-lightblue/30 dark:hover:bg-lightblue/20'
+              }`}
+            >
+              {region}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

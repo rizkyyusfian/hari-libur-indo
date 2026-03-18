@@ -1,41 +1,46 @@
 'use client';
 
+import { useState } from 'react';
 import { Globe } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { Language, detectUserLanguage } from '@/lib/i18n';
+import { useRouter } from 'next/navigation';
 
-interface LanguageSwitcherProps {
-  onLanguageChange?: (lang: Language) => void;
-}
+export function LanguageSwitcher() {
+  const router = useRouter();
+  const [isOpen, setIsOpen] = useState(false);
 
-export function LanguageSwitcher({ onLanguageChange }: LanguageSwitcherProps) {
-  const [language, setLanguage] = useState<Language>('id');
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    const savedLang = (localStorage.getItem('language') as Language) || detectUserLanguage();
-    setLanguage(savedLang);
-    setMounted(true);
-  }, []);
-
-  const toggleLanguage = () => {
-    const newLang: Language = language === 'id' ? 'en' : 'id';
-    setLanguage(newLang);
-    localStorage.setItem('language', newLang);
-    onLanguageChange?.(newLang);
-    window.dispatchEvent(new CustomEvent('languageChange', { detail: newLang }));
+  const handleLanguageChange = (lang: string) => {
+    document.documentElement.lang = lang;
+    localStorage.setItem('language', lang);
+    window.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang } }));
+    setIsOpen(false);
   };
 
-  if (!mounted) return null;
-
   return (
-    <button
-      onClick={toggleLanguage}
-      className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/30 transition"
-      title={`Switch to ${language === 'id' ? 'English' : 'Indonesian'}`}
-    >
-      <Globe size={18} />
-      <span className="hidden sm:inline">{language.toUpperCase()}</span>
-    </button>
+    <div className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="px-4 py-2 rounded-lg border-2 border-burgundy dark:border-darkred bg-cream dark:bg-darkblue text-burgundy dark:text-cream font-bold hover:bg-burgundy/10 dark:hover:bg-darkred/10 transition flex items-center gap-2"
+      >
+        <Globe size={18} />
+        <span className="hidden sm:inline">Bahasa</span>
+      </button>
+
+      {isOpen && (
+        <div className="absolute top-12 right-0 z-50 bg-cream dark:bg-darkblue border-2 border-burgundy dark:border-darkred rounded-lg shadow-xl p-2 space-y-1 min-w-max">
+          <button
+            onClick={() => handleLanguageChange('id')}
+            className="block w-full text-left px-3 py-2 rounded-lg font-bold text-burgundy dark:text-cream hover:bg-lightblue/30 dark:hover:bg-lightblue/20 transition"
+          >
+            🇮🇩 Bahasa Indonesia
+          </button>
+          <button
+            onClick={() => handleLanguageChange('en')}
+            className="block w-full text-left px-3 py-2 rounded-lg font-bold text-burgundy dark:text-cream hover:bg-lightblue/30 dark:hover:bg-lightblue/20 transition"
+          >
+            🇬🇧 English
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
