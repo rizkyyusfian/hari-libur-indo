@@ -16,16 +16,16 @@ export function CutiPlanner({ holidays, regionFilter }: CutiPlannerProps) {
   const totalEstimate = estimateTotalDaysOff(cutiDays, holidays, undefined, regionFilter);
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-700 p-4 shadow-sm">
+    <div className="bg-white dark:bg-slate-800/50 rounded-lg border-2 border-purple-200 dark:border-purple-700/50 p-4 shadow-lg backdrop-blur-sm">
       <div className="flex items-center gap-2 mb-4">
-        <Zap size={18} className="text-amber-500" />
-        <h3 className="font-semibold text-gray-900 dark:text-gray-100">Cuti Planner</h3>
+        <Zap size={18} className="text-purple-500 dark:text-purple-400" />
+        <h3 className="font-bold text-purple-700 dark:text-purple-300">Cuti Planner</h3>
       </div>
 
       <div className="space-y-4">
         {/* Input */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label className="block text-sm font-bold text-purple-700 dark:text-purple-300 mb-2">
             Berapa hari cuti yang kamu punya?
           </label>
           <input
@@ -34,11 +34,11 @@ export function CutiPlanner({ holidays, regionFilter }: CutiPlannerProps) {
             max="30"
             value={cutiDays}
             onChange={e => setCutiDays(parseInt(e.target.value))}
-            className="w-full accent-indigo-600"
+            className="w-full accent-purple-600 dark:accent-pink-500"
           />
           <div className="flex justify-between items-center mt-2">
-            <span className="text-sm text-gray-600 dark:text-gray-400">Cuti: {cutiDays} hari</span>
-            <span className="text-sm font-semibold text-indigo-600 dark:text-indigo-400">
+            <span className="text-sm font-bold text-purple-600 dark:text-purple-400">Cuti: {cutiDays} hari</span>
+            <span className="text-sm font-bold text-pink-600 dark:text-pink-400">
               📅 Potensi: {totalEstimate} hari off
             </span>
           </div>
@@ -46,13 +46,13 @@ export function CutiPlanner({ holidays, regionFilter }: CutiPlannerProps) {
 
         {/* Estimate Card */}
         {totalEstimate > 0 && (
-          <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-lg p-3 border border-amber-200 dark:border-amber-800 flex items-center gap-3">
-            <TrendingUp className="text-amber-600 dark:text-amber-400 flex-shrink-0" size={20} />
+          <div className="bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 rounded-lg p-3 border-2 border-green-300 dark:border-green-700/50 flex items-center gap-3">
+            <TrendingUp className="text-green-600 dark:text-green-400 flex-shrink-0" size={20} />
             <div>
-              <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">
+              <p className="text-sm font-bold text-green-700 dark:text-green-300">
                 Maksimalkan liburan! 🎉
               </p>
-              <p className="text-xs text-amber-800 dark:text-amber-300">
+              <p className="text-xs text-green-600 dark:text-green-400 font-medium">
                 {cutiDays} hari cuti bisa menjadi {totalEstimate} hari off jika direncanakan dengan baik
               </p>
             </div>
@@ -62,28 +62,28 @@ export function CutiPlanner({ holidays, regionFilter }: CutiPlannerProps) {
         {/* Recommendations */}
         {recommendations.length > 0 ? (
           <div className="space-y-2">
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">💡 Rekomendasi Cuti:</p>
+            <p className="text-sm font-bold text-purple-700 dark:text-purple-300">💡 Rekomendasi Cuti:</p>
             {recommendations.map((rec, idx) => (
-              <div key={idx} className="bg-gray-50 dark:bg-slate-800 rounded-lg p-2 border border-gray-200 dark:border-slate-700">
-                <p className="text-xs font-semibold text-gray-900 dark:text-gray-100 mb-1">
+              <div key={idx} className="bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 rounded-lg p-2 border-2 border-purple-200 dark:border-purple-700/50">
+                <p className="text-xs font-bold text-purple-700 dark:text-purple-300 mb-1">
                   Opsi {idx + 1}: {rec.totalDaysOff} hari off
                 </p>
-                <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">
+                <p className="text-xs text-purple-600 dark:text-purple-400 font-medium mb-1">
                   {rec.reason}
                 </p>
-                <p className="text-xs text-indigo-600 dark:text-indigo-400">
+                <p className="text-xs text-pink-600 dark:text-pink-400 font-bold">
                   {rec.dates.map(d => formatDateIndonesian(d)).join(', ')}
                 </p>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-sm text-gray-600 dark:text-gray-400 text-center py-4">
+          <p className="text-sm text-purple-600 dark:text-purple-400 text-center py-4 font-medium">
             Tidak ada rekomendasi untuk saat ini
           </p>
         )}
 
-        <p className="text-xs text-gray-500 dark:text-gray-400 pt-2 border-t border-gray-200 dark:border-slate-700">
+        <p className="text-xs text-purple-600 dark:text-purple-400 pt-2 border-t border-purple-200 dark:border-purple-700/50 font-medium">
           🎯 Tip: Ambil cuti sebelum atau sesudah hari libur untuk memaksimalkan waktu istirahat!
         </p>
       </div>

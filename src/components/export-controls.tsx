@@ -30,17 +30,17 @@ export function ExportControls({ calendarElementId = 'calendar-export' }: Export
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-700 p-4 shadow-sm">
+    <div className="bg-white dark:bg-slate-800/50 rounded-lg border-2 border-purple-200 dark:border-purple-700/50 p-4 shadow-lg backdrop-blur-sm">
       <div className="flex items-center gap-2 mb-4">
-        <Download size={18} className="text-green-500" />
-        <h3 className="font-semibold text-gray-900 dark:text-gray-100">Ekspor</h3>
+        <Download size={18} className="text-purple-500 dark:text-purple-400" />
+        <h3 className="font-bold text-purple-700 dark:text-purple-300">Ekspor</h3>
       </div>
 
       <div className="grid grid-cols-2 gap-2">
         <button
           onClick={handleExportImage}
           disabled={isExporting}
-          className="px-3 py-2 rounded-lg bg-green-100 hover:bg-green-200 dark:bg-green-900/30 dark:hover:bg-green-900/50 text-green-700 dark:text-green-300 text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-3 py-2 rounded-lg bg-gradient-to-r from-yellow-200 to-orange-200 dark:from-yellow-900/40 dark:to-orange-900/40 hover:shadow-lg text-yellow-700 dark:text-yellow-300 text-sm font-bold transition disabled:opacity-50 disabled:cursor-not-allowed border border-yellow-300 dark:border-yellow-700/50"
         >
           {isExporting ? '⏳ Proses...' : '🖼️ Gambar'}
         </button>
@@ -48,13 +48,13 @@ export function ExportControls({ calendarElementId = 'calendar-export' }: Export
         <button
           onClick={handleExportPDF}
           disabled={isExporting}
-          className="px-3 py-2 rounded-lg bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-700 dark:text-red-300 text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-3 py-2 rounded-lg bg-gradient-to-r from-red-200 to-pink-200 dark:from-red-900/40 dark:to-pink-900/40 hover:shadow-lg text-red-700 dark:text-red-300 text-sm font-bold transition disabled:opacity-50 disabled:cursor-not-allowed border border-red-300 dark:border-red-700/50"
         >
           {isExporting ? '⏳ Proses...' : '📄 PDF'}
         </button>
       </div>
 
-      <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
+      <p className="text-xs text-purple-600 dark:text-purple-400 mt-3 font-medium">
         💾 Bagikan kalender dengan teman dan keluarga
       </p>
     </div>

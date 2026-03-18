@@ -8,7 +8,6 @@ import { ToggleRegion } from '@/components/toggle-region';
 import { LongWeekendList } from '@/components/long-weekend-list';
 import { CutiPlanner } from '@/components/cuti-planner';
 import { ExportControls } from '@/components/export-controls';
-import { TimezoneInfo } from '@/components/timezone-info';
 import { mockHolidays } from '@/lib/mock-data';
 import { Holiday } from '@/lib/date-utils';
 
@@ -39,29 +38,28 @@ export default function Home() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 transition-colors">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:bg-gradient-to-br dark:from-slate-900 dark:via-purple-900 dark:to-slate-900 transition-colors">
       <Header />
 
-      <main className="max-w-6xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column */}
-          <div className="lg:col-span-2 space-y-6">
+      <main className="max-w-7xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Left Column - Main Content */}
+          <div className="lg:col-span-3 space-y-6">
             <SummaryCard holidays={filteredHolidays} regionFilter={regionFilter} />
             <Calendar holidays={filteredHolidays} regionFilter={regionFilter} />
-          </div>
-
-          {/* Right Column */}
-          <div className="lg:col-span-1 space-y-6">
-            <ToggleRegion regionFilter={regionFilter} onToggle={setRegionFilter} />
-            <TimezoneInfo />
-            <ExportControls />
             <LongWeekendList holidays={filteredHolidays} regionFilter={regionFilter} />
             <CutiPlanner holidays={filteredHolidays} regionFilter={regionFilter} />
+          </div>
+
+          {/* Right Column - Sidebar */}
+          <div className="lg:col-span-1 space-y-6">
+            <ToggleRegion regionFilter={regionFilter} onToggle={setRegionFilter} />
+            <ExportControls />
           </div>
         </div>
 
         {/* Footer Info */}
-        <div className="mt-12 text-center text-sm text-gray-600 dark:text-gray-400">
+        <div className="mt-12 text-center text-sm text-purple-600 dark:text-purple-300">
           <p>🇮🇩 Hari Libur Indonesia - Papua Barat Daya</p>
           <p className="mt-1">Data libur diperbarui untuk tahun 2026</p>
         </div>

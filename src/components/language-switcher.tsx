@@ -13,10 +13,9 @@ export function LanguageSwitcher({ onLanguageChange }: LanguageSwitcherProps) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    const savedLang = (localStorage.getItem('language') as Language) || detectUserLanguage();
+    setLanguage(savedLang);
     setMounted(true);
-    const savedLang = localStorage.getItem('language') as Language;
-    const lang = savedLang || detectUserLanguage();
-    setLanguage(lang);
   }, []);
 
   const toggleLanguage = () => {
@@ -24,6 +23,7 @@ export function LanguageSwitcher({ onLanguageChange }: LanguageSwitcherProps) {
     setLanguage(newLang);
     localStorage.setItem('language', newLang);
     onLanguageChange?.(newLang);
+    window.dispatchEvent(new CustomEvent('languageChange', { detail: newLang }));
   };
 
   if (!mounted) return null;
@@ -31,7 +31,7 @@ export function LanguageSwitcher({ onLanguageChange }: LanguageSwitcherProps) {
   return (
     <button
       onClick={toggleLanguage}
-      className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 transition"
+      className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/30 transition"
       title={`Switch to ${language === 'id' ? 'English' : 'Indonesian'}`}
     >
       <Globe size={18} />
