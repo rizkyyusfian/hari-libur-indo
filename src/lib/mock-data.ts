@@ -23,38 +23,38 @@ export const mockHolidays: Holiday[] = [
 
 export const getRoastMessage = (daysUntil: number, todayIsHoliday: boolean): string => {
   if (todayIsHoliday) {
-    return '🎉 Selamat liburan! Nikmati harimu! 🏖️';
+    return 'Selamat liburan! Nikmati harimu!';
   }
 
   if (daysUntil === 0) {
-    return '🎊 Libur mulai sekarang! Jangan lupa nyalain alarm untuk besok 😄';
+    return 'Libur mulai sekarang! Jangan lupa nyalain alarm untuk besok.';
   }
 
   if (daysUntil === 1) {
-    return '⏰ Besok libur! Persiapkan diri sekarang 🚀';
+    return 'Besok libur! Persiapkan diri sekarang.';
   }
 
   if (daysUntil <= 3) {
-    return `⏳ Sebentar lagi libur (${daysUntil} hari lagi), tahan ya! 💪`;
+    return `Sebentar lagi libur (${daysUntil} hari lagi), tahan ya!`;
   }
 
   if (daysUntil <= 7) {
-    return `🗓️ Libur dalam ${daysUntil} hari. Semangat bekerja! ☕`;
+    return `Libur dalam ${daysUntil} hari. Semangat bekerja!`;
   }
 
   if (daysUntil <= 14) {
-    return `📅 ${daysUntil} hari lagi libur. Tetap fokus! 📚`;
+    return `${daysUntil} hari lagi libur. Tetap fokus!`;
   }
 
   if (daysUntil <= 30) {
-    return `🌅 Masih lama ${daysUntil} hari. Jangan cepat lelah! 🏋️`;
+    return `Masih lama ${daysUntil} hari. Jangan cepat lelah!`;
   }
 
-  return '⏰ Kerja dulu, libur nanti 😭';
+  return 'Kerja dulu, libur nanti.';
 };
 
 export const getCutiAdvice = (cutiDays: number): string[] => {
-  if (cutiDays <= 0) return ['Tidak perlu cuti kali ini 😄'];
+  if (cutiDays <= 0) return ['Tidak perlu cuti kali ini.'];
 
   const advices = [
     `Dengan ${cutiDays} hari cuti, kamu bisa maksimalkan waktu libur!`,

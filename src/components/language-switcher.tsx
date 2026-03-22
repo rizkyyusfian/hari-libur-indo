@@ -31,7 +31,7 @@ export function LanguageSwitcher({ onLanguageChange }: LanguageSwitcherProps) {
   return (
     <button
       onClick={toggleLanguage}
-      className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 transition"
+      className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-[#003049] dark:text-gray-300 hover:bg-[#669bbc]/20 dark:hover:bg-slate-800 transition"
       title={`Switch to ${language === 'id' ? 'English' : 'Indonesian'}`}
     >
       <Globe size={18} />

@@ -56,18 +56,23 @@ DEFAULT_PDF_URL=
 
 ### 1. Regions
 
-```sql
-create table regions (
-  id uuid primary key default uuid_generate_v4(),
+```
+sql
+create table public.regions (
+  id uuid not null default extensions.uuid_generate_v4 (),
   name text not null,
-  code text unique not null,
-  created_at timestamp default now()
-);
+  code text not null,
+  created_at timestamp with time zone null default now(),
+  updated_at timestamp with time zone null default now(),
+  constraint regions_pkey primary key (id),
+  constraint regions_code_key unique (code)
+) TABLESPACE pg_default;
 ```
 
 Seed:
 
-```sql
+```
+sql
 insert into regions (name, code)
 values ('Papua Barat Daya', 'papua_barat_daya');
 ```
@@ -76,38 +81,56 @@ values ('Papua Barat Daya', 'papua_barat_daya');
 
 ### 2. Holidays
 
-```sql
-create table holidays (
-  id uuid primary key default uuid_generate_v4(),
-
+```
+create table public.holidays (
+  id uuid not null default extensions.uuid_generate_v4 (),
   date date not null,
   name text not null,
+  type text not null,
+  region_id uuid null,
+  description text null,
+  is_cuti_bersama boolean null default false,
+  created_at timestamp with time zone null default now(),
+  updated_at timestamp with time zone null default now(),
+  constraint holidays_pkey primary key (id),
+  constraint holidays_region_id_fkey foreign KEY (region_id) references regions (id) on delete CASCADE,
+  constraint holidays_type_check check (
+    (
+      type = any (array['national'::text, 'regional'::text])
+    )
+  )
+) TABLESPACE pg_default;
 
-  type text not null check (type in ('national', 'regional')),
-  region_id uuid references regions(id) on delete cascade,
+create index IF not exists idx_holidays_date on public.holidays using btree (date) TABLESPACE pg_default;
 
-  description text,
-  is_cuti_bersama boolean default false,
+create index IF not exists idx_holidays_type on public.holidays using btree (type) TABLESPACE pg_default;
 
-  created_at timestamp default now(),
-  updated_at timestamp default now()
-);
+create index IF not exists idx_holidays_region on public.holidays using btree (region_id) TABLESPACE pg_default;
+
+create trigger update_holidays_updated_at BEFORE
+update on holidays for EACH row
+execute FUNCTION update_updated_at_column ();
 ```
 
 ---
 
 ### 3. Documents (PDF Surat Edaran)
 
-```sql
-create table documents (
-  id uuid primary key default uuid_generate_v4(),
-
-  holiday_id uuid references holidays(id) on delete cascade,
-  title text,
+```
+create table public.documents (
+  id uuid not null default extensions.uuid_generate_v4 (),
+  title text not null,
   file_url text not null,
+  year integer not null,
+  is_active boolean null default true,
+  created_at timestamp with time zone null default now(),
+  updated_at timestamp with time zone null default now(),
+  constraint documents_pkey primary key (id)
+) TABLESPACE pg_default;
 
-  created_at timestamp default now()
-);
+create index IF not exists idx_documents_year on public.documents using btree (year) TABLESPACE pg_default;
+
+create index IF not exists idx_documents_active on public.documents using btree (is_active) TABLESPACE pg_default;
 ```
 
 ---
