@@ -38,22 +38,3 @@ export default function RootLayout({
     </html>
   );
 }
-
-function ThemeScript() {
-  const themeScript = `
-    (function() {
-      const theme = localStorage.getItem('theme') || 'light';
-      if (theme === 'dark') {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
-    })();
-  `;
-
-  return (
-    <script
-      dangerouslySetInnerHTML={{ __html: themeScript }}
-    />
-  );
-}
