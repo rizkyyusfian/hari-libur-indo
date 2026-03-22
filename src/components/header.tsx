@@ -3,7 +3,6 @@
 import { Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
-import { LanguageSwitcher } from './language-switcher';
 import Link from 'next/link';
 
 export function Header() {
@@ -38,8 +37,6 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-2">
-          <LanguageSwitcher />
-
           <button
             onClick={toggleDarkMode}
             className="p-2 rounded-lg hover:bg-[#669bbc]/20 dark:hover:bg-slate-800 transition"
