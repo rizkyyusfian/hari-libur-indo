@@ -33,8 +33,32 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+<<<<<<< HEAD
         <ThemeProvider>{children}</ThemeProvider>
+=======
+        <ThemeScript />
+        {children}
+>>>>>>> main
       </body>
     </html>
+  );
+}
+
+function ThemeScript() {
+  const themeScript = `
+    (function() {
+      const theme = localStorage.getItem('theme') || 'light';
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    })();
+  `;
+
+  return (
+    <script
+      dangerouslySetInnerHTML={{ __html: themeScript }}
+    />
   );
 }

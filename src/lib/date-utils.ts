@@ -147,7 +147,11 @@ export const getNextOffPeriod = (from: Date, holidays: Holiday[]): { type: 'holi
 };
 
 // Get days until next off day
+<<<<<<< HEAD
 export const getDaysUntilNextOffDay = (from: Date, holidays: Holiday[]): number => {
+=======
+export const getDaysUntilNextOffDay = (from: Date, holidays: Holiday[], regionFilter?: string): number => {
+>>>>>>> main
   const date = new Date(from);
   date.setDate(date.getDate() + 1);
 
