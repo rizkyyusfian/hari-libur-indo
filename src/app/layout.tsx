@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "🇮🇩 Hari Libur Indo - Papua Barat Daya",
-  description: "Aplikasi kalender libur Indonesia dengan fokus Papua Barat Daya. Lihat hari libur nasional, long weekend, dan rencanakan cuti dengan cerdas.",
+  title: "Hari Libur Indonesia",
+  description: "Web App kalender libur Indonesia dengan fokus Papua Barat Daya. Planning liburanmu dari jauh-jauh hari.",
 };
 
 export const viewport: Viewport = {

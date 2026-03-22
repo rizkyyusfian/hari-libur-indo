@@ -1,663 +1,171 @@
-# 🇮🇩 Indonesia Holiday Web App (Papua Barat Daya Focus)
+# 🇮🇩 Hari Libur Indo
 
-## 📌 Overview
+> Kalender hari libur Indonesia dengan fokus Papua Barat Daya — smart, modern, dan helpful.
 
-This project is a **holiday calendar web application** focused on **Papua Barat Daya province**, while still supporting **national Indonesian holidays**.
+![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-38B2AC?logo=tailwind-css)
+![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?logo=supabase)
+![License](https://img.shields.io/badge/License-MIT-blue)
 
-Unlike typical calendar apps, this project aims to provide:
+## ✨ Features
 
-* Accurate **regional holiday support**
-* Smart **long weekend detection**
-* Intelligent **cuti (paid leave) planner**
-* Clean, modern, and responsive UI
+- 📅 **Calendar View** — Monthly & yearly view dengan highlight hari libur
+- 🏝️ **Long Weekend Detection** — Auto-detect long weekend (≥3 hari berturut-turut)
+- 🎯 **Regional Support** — Hari libur nasional + regional khusus Papua Barat Daya
+- 📄 **Surat Edaran** — Link ke dokumen resmi SKB Cuti Bersama
+- 🌙 **Dark Mode** — Light/dark theme toggle
+- 📥 **Export** — Download kalender sebagai PNG atau PDF
+- ⏰ **Timezone Aware** — Support WIB, WITA, WIT
 
----
-
-## 🎯 Goals
-
-* Provide **accurate holiday data** (manual input, verified)
-* Support **regional + national holiday filtering**
-* Help users **optimize time off (cuti)**
-* Deliver a **simple, fast, and enjoyable UX**
-
----
-
-## 🧱 Tech Stack
-
-### Frontend
-
-* **Next.js (App Router)**
-* **Tailwind CSS**
-* **shadcn/ui**
-
-### Backend
-
-* **Supabase**
-
-  * Database (PostgreSQL)
-  * Storage (PDF documents)
-  * Auth (admin login)
-
----
-
-## ⚙️ Environment Variables
-
-```env
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
-SUPABASE_BUCKET=pdf-uploads
-DEFAULT_PDF_URL=
-```
-
----
-
-## 🗄️ Database Schema
-
-### 1. Regions
-
-```
-sql
-create table public.regions (
-  id uuid not null default extensions.uuid_generate_v4 (),
-  name text not null,
-  code text not null,
-  created_at timestamp with time zone null default now(),
-  updated_at timestamp with time zone null default now(),
-  constraint regions_pkey primary key (id),
-  constraint regions_code_key unique (code)
-) TABLESPACE pg_default;
-```
-
-Seed:
-
-```
-sql
-insert into regions (name, code)
-values ('Papua Barat Daya', 'papua_barat_daya');
-```
-
----
-
-### 2. Holidays
-
-```
-create table public.holidays (
-  id uuid not null default extensions.uuid_generate_v4 (),
-  date date not null,
-  name text not null,
-  type text not null,
-  region_id uuid null,
-  description text null,
-  is_cuti_bersama boolean null default false,
-  created_at timestamp with time zone null default now(),
-  updated_at timestamp with time zone null default now(),
-  constraint holidays_pkey primary key (id),
-  constraint holidays_region_id_fkey foreign KEY (region_id) references regions (id) on delete CASCADE,
-  constraint holidays_type_check check (
-    (
-      type = any (array['national'::text, 'regional'::text])
-    )
-  )
-) TABLESPACE pg_default;
-
-create index IF not exists idx_holidays_date on public.holidays using btree (date) TABLESPACE pg_default;
-
-create index IF not exists idx_holidays_type on public.holidays using btree (type) TABLESPACE pg_default;
-
-create index IF not exists idx_holidays_region on public.holidays using btree (region_id) TABLESPACE pg_default;
-
-create trigger update_holidays_updated_at BEFORE
-update on holidays for EACH row
-execute FUNCTION update_updated_at_column ();
-```
-
----
-
-### 3. Documents (PDF Surat Edaran)
-
-```
-create table public.documents (
-  id uuid not null default extensions.uuid_generate_v4 (),
-  title text not null,
-  file_url text not null,
-  year integer not null,
-  is_active boolean null default true,
-  created_at timestamp with time zone null default now(),
-  updated_at timestamp with time zone null default now(),
-  constraint documents_pkey primary key (id)
-) TABLESPACE pg_default;
-
-create index IF not exists idx_documents_year on public.documents using btree (year) TABLESPACE pg_default;
-
-create index IF not exists idx_documents_active on public.documents using btree (is_active) TABLESPACE pg_default;
-```
-
----
-
-## 🔐 Row Level Security (RLS)
-
-Enable:
-
-```sql
-alter table holidays enable row level security;
-alter table documents enable row level security;
-```
-
-Public read:
-
-```sql
-create policy "Public can read holidays"
-on holidays for select using (true);
-
-create policy "Public can read documents"
-on documents for select using (true);
-```
-
-Authenticated users (admin) can modify:
-
-```sql
-create policy "Auth can insert holidays"
-on holidays for insert
-with check (auth.role() = 'authenticated');
-
-create policy "Auth can update holidays"
-on holidays for update
-using (auth.role() = 'authenticated');
-
-create policy "Auth can delete holidays"
-on holidays for delete
-using (auth.role() = 'authenticated');
-```
-
----
-
-## 📦 Storage (Supabase)
-
-Bucket:
-
-```
-pdf-uploads
-```
-
-Used for:
-
-* Surat Edaran (PDF documents)
-
----
-
-## 🧠 Core Features
-
-### 1. Calendar View
-
-* Day / Week / Month / Year
-* Highlight:
-
-  * Holidays
-  * Weekends
-* Toggle:
-
-  * National only
-  * Include Papua Barat Daya
-
----
-
-### 2. Holiday Summary
-
-* Current day status:
-
-  * Holiday / Not holiday
-* Nearest holiday
-* Nearest long weekend
-* Total holidays per year
-
----
-
-### 3. Long Weekend Detection
-
-#### Logic:
-
-* Combine:
-
-  * Holidays
-  * Weekends (Sat/Sun)
-* Detect consecutive ≥ 3 days
-
-#### Output Example:
-
-```json
-{
-  "start": "2026-12-24",
-  "end": "2026-12-28",
-  "length": 5
-}
-```
-
----
-
-### 4. Cuti Planner (Core Feature)
-
-#### Input:
-
-* Number of cuti days
-
-#### Output:
-
-* Recommended leave dates
-* Total days off
-
-#### Strategy:
-
-* Fill gaps between holidays
-* Extend existing long weekends
-* Maximize total days off
-
----
-
-### 5. Long Weekend List
-
-* Grouped by month
-* Includes weekend bridging
-
----
-
-### 6. Admin Panel
-
-#### Features:
-
-* Login (Supabase Auth)
-* Add/Edit/Delete holidays
-* Upload PDF (Surat Edaran)
-* Assign region (optional)
-
----
-
-### 7. PDF Upload
-
-Flow:
-
-1. Upload file to Supabase Storage
-2. Get public URL
-3. Save to `documents.file_url`
-
----
-
-### 8. Export Calendar
-
-* JPG (html2canvas)
-* PDF (jspdf)
-
----
-
-### 9. Localization
-
-* Default: Bahasa Indonesia
-* Secondary: English
-
----
-
-### 10. Dark Mode
-
-* Light / Dark toggle
-
----
-
-### 11. Timezone Detection
-
-* Auto-detect user timezone
-* Support:
-
-  * WIB
-  * WITA
-  * WIT
-
----
-
-## 🎨 UI Structure
-
-```
-/app
-  /page.tsx
-  /components
-    header.tsx
-    summary-card.tsx
-    calendar.tsx
-    toggle-region.tsx
-    long-weekend-list.tsx
-    cuti-planner.tsx
-```
-
----
-
-## 🧩 Key UI Sections
-
-### Header
-
-* App title
-* Theme toggle
-
-### Summary Card
-
-* Today status
-* Nearest holiday
-* Long weekend info
-* Fun "roast" message
-
-### Calendar
-
-* Grid (7 columns)
-* Highlight holidays
-
-### Long Weekend List
-
-* Date range + duration
-
-### Cuti Planner
-
-* Input: cuti days
-* Output: recommendation
-
----
-
-## 😄 UX Enhancement (Roast Text)
-
-Examples:
-
-* "Belum libur bos, kerja dulu 😭"
-* "Tahan dikit, libur bentar lagi 💪"
-* "Gas! Long weekend 🔥"
-
----
-
-## 🚀 Development Phases
-
-### Phase 1 (MVP)
-
-* Calendar view
-* Holiday data (manual input)
-* Toggle regional
-* Basic summary
-
----
-
-### Phase 2
-
-* Long weekend detection
-* Countdown
-* Year stats
-
----
-
-### Phase 3
-
-* Cuti planner (core logic)
-* Export PDF/JPG
-
----
-
-### Phase 4
-
-* Localization (EN)
-* Multi-region support
-
----
-
-## 🧠 Key Design Decisions
-
-* Holiday data is **manually managed**
-* No external API dependency
-* Supabase handles:
-
-  * DB
-  * Auth
-  * Storage
-* Schema is **future-proof for multi-region**
-
----
-
-## 📌 Future Improvements
-
-* Multi-province support
-* Shareable holiday plans
-* Notifications (PWA)
-* Mobile-first optimization
-
----
-
-## 💬 Notes
-
-This project is designed as:
-
-> A practical, accurate, and intelligent holiday planning tool for Indonesia.
-
----
-
-## 🛠️ Next Steps
-
-* Setup Supabase project
-* Run SQL schema
-* Build admin panel
-* Connect frontend to database
-* Implement core algorithms
-
----
-
-## 👨‍💻 Author Notes
-
-This README serves as:
-
-* Project blueprint
-* Development guide
-* Copilot CLI context file
-
-Keep updating this as the project evolves
----
-
-## ✅ Implementation Status
-
-### Phase 1 ✓ COMPLETE
-- [x] Calendar view (month/week/day)
-- [x] Holiday data with mock
-- [x] Regional toggle (national + Papua Barat Daya)
-- [x] Summary card with today status
-- [x] Roast message system
-
-### Phase 2 ✓ COMPLETE
-- [x] Long weekend detection algorithm
-- [x] Countdown to next holiday
-- [x] Long weekend list component (grouped by month)
-- [x] Year statistics
-
-### Phase 3 ✓ COMPLETE
-- [x] Cuti planner algorithm with optimization
-- [x] Cuti planner component with slider input
-- [x] PDF export (jspdf)
-- [x] JPG/PNG export (html2canvas)
-
-### Phase 4 ✓ COMPLETE
-- [x] Internationalization (ID + EN)
-- [x] Dark mode toggle with persistence
-- [x] Timezone detection (WIB, WITA, WIT)
-- [x] Language switcher
-- [x] UI polish and responsive design
-
-### Admin Panel / Phase 5 (Not Started)
-- [ ] Admin authentication (Supabase Auth)
-- [ ] Holiday CRUD operations
-- [ ] PDF upload for Surat Edaran
-- [ ] Admin dashboard
-
----
-
-## 🚀 Getting Started
+## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18+
-- npm or yarn
+
+- Node.js 20+
+- npm or pnpm
+- Supabase account
 
 ### Installation
 
 ```bash
+# Clone repository
+git clone https://github.com/yourusername/hari-libur-indo.git
+cd hari-libur-indo
+
+# Install dependencies
 npm install
-```
 
-### Configuration
+# Setup environment variables
+cp .env.example .env.local
+# Edit .env.local with your Supabase credentials
 
-1. Create `.env.local` with your Supabase credentials:
-```env
-NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-key
-SUPABASE_SERVICE_ROLE_KEY=your-service-key
-SUPABASE_BUCKET=pdf-uploads
-```
-
-### Development
-
-```bash
+# Run development server
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open [http://localhost:3000](http://localhost:3000) 🎉
 
-### Production Build
+### Environment Variables
 
-```bash
-npm run build
-npm run start
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_anon_key
+SUPABASE_BUCKET=your_bucket_name
 ```
 
----
+## 🛠️ Tech Stack
+
+| Category | Technology |
+|----------|------------|
+| Framework | Next.js 16 (App Router) |
+| Styling | Tailwind CSS v4 |
+| Database | Supabase (PostgreSQL) |
+| Storage | Supabase Storage |
+| Auth | Supabase Auth |
+| Icons | Lucide React |
+| Export | html-to-image, jsPDF |
 
 ## 📁 Project Structure
 
 ```
 src/
 ├── app/
-│   ├── page.tsx          # Main page
-│   ├── layout.tsx        # Root layout
-│   └── globals.css       # Global styles
+│   ├── page.tsx          # Main calendar page
+│   ├── about/            # About page
+│   └── admin/            # Admin panel (protected)
 ├── components/
-│   ├── header.tsx        # App header with theme/language toggle
-│   ├── calendar.tsx      # Calendar grid component
-│   ├── summary-card.tsx  # Today status & next holiday
-│   ├── toggle-region.tsx # Region filter buttons
-│   ├── long-weekend-list.tsx # Long weekend display
-│   ├── cuti-planner.tsx  # Leave planner component
-│   ├── export-controls.tsx # PDF/Image export buttons
-│   ├── timezone-info.tsx # Current timezone display
-│   └── language-switcher.tsx # Language toggle
-└── lib/
-    ├── date-utils.ts     # Date manipulation & holiday logic
-    ├── cuti-planner.ts   # Leave planning algorithm
-    ├── export-utils.ts   # PDF/image export functions
-    ├── mock-data.ts      # Mock holiday data
-    ├── supabase.ts       # Supabase client
-    ├── i18n.ts           # Internationalization
-    └── timezone.ts       # Timezone utilities
+│   ├── calendar.tsx      # Calendar component
+│   ├── summary-card.tsx  # Today's status
+│   ├── long-weekend-list.tsx
+│   ├── cuti-planner.tsx
+│   └── ui/               # Reusable UI components
+├── lib/
+│   ├── supabase.ts       # Supabase client
+│   ├── date-utils.ts     # Date helpers
+│   └── export-utils.ts   # PNG/PDF export
+└── providers/
+    └── theme-provider.tsx
 ```
 
----
+## 🗄️ Database Setup
 
-## 🎨 Key Features Implemented
+Run the SQL in `supabase-schema.sql` to create tables:
 
-### Calendar View
-- Month grid with day/week navigation
-- Holiday highlighting in green
-- Weekend highlighting in red
-- Current day in blue
-- Interactive day selection
+- `regions` — Regional data (Papua Barat Daya)
+- `holidays` — Holiday entries (national & regional)
+- `documents` — Surat Edaran PDFs
 
-### Long Weekend Detection
-- Automatically detects 3+ consecutive off days
-- Groups by month for easy viewing
-- Shows date ranges and duration
-- Lists contributing holidays/weekends
+<details>
+<summary>Quick Schema Overview</summary>
 
-### Cuti Planner
-- Interactive slider (1-30 days)
-- Smart algorithm to maximize days off
-- Shows total potential off days
-- Provides up to 5 recommendations
-- Displays exact dates to take leave
+```sql
+-- Regions
+create table regions (
+  id uuid primary key default uuid_generate_v4(),
+  name text not null,
+  code text unique not null
+);
 
-### Regional Filtering
-- National holidays only
-- National + Papua Barat Daya
-- Dedicated regional holidays
+-- Holidays  
+create table holidays (
+  id uuid primary key default uuid_generate_v4(),
+  date date not null,
+  name text not null,
+  type text check (type in ('national', 'regional')),
+  region_id uuid references regions(id),
+  is_cuti_bersama boolean default false
+);
 
-### Export Functionality
-- Export calendar as PNG image
-- Export calendar as PDF document
-- Uses html2canvas and jspdf libraries
-
-### Localization
-- Bahasa Indonesia (default)
-- English
-- Auto-detection based on browser language
-- Persistent language selection
-
-### Timezone Support
-- WIB (UTC+7) - Western Indonesia
-- WITA (UTC+8) - Central Indonesia  
-- WIT (UTC+9) - Eastern Indonesia
-- Auto-detection based on system
-- Real-time clock display
-
-### Dark Mode
-- Light/Dark theme toggle
-- Persistent preference storage
-- System preference detection
-
----
-
-## 🔄 Next Steps for Admin Panel
-
-To complete Phase 5, implement:
-
-1. **Authentication**
-   - Setup Supabase Auth with email/password
-   - Protect admin routes
-   - Create login page
-
-2. **Holiday Management**
-   - Create form for adding holidays
-   - Edit existing holidays
-   - Delete holidays
-   - Batch upload from CSV
-
-3. **Document Upload**
-   - Upload Surat Edaran PDFs
-   - Link documents to holidays
-   - Display PDF links in UI
-
-4. **Database Integration**
-   - Replace mock-data with Supabase queries
-   - Real-time updates
-   - Row-level security policies
-
----
-
-## 🧪 Testing
-
-Build and verify:
-```bash
-npm run build
-npm run lint
+-- Documents
+create table documents (
+  id uuid primary key default uuid_generate_v4(),
+  title text not null,
+  file_url text not null,
+  year integer not null,
+  type text check (type in ('national', 'regional')),
+  region_id uuid references regions(id),
+  is_active boolean default true
+);
 ```
 
----
+</details>
 
-## 📝 Notes
+## 🔐 Admin Panel
 
-- Holiday data is currently mocked (2026 data)
-- Admin panel not yet implemented
-- Supabase setup required for production
-- Mobile-responsive design implemented
-- RTL language support (future enhancement)
+Access admin panel at `/admin/login`
 
----
+Features:
+- 📝 CRUD holidays (single & batch insert)
+- 📄 Upload Surat Edaran PDF
+- 🏷️ Assign regional holidays
+- 📊 Dashboard overview
+
+## 🤝 Contributing
+
+Contributions are welcome! Feel free to:
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## 📄 License
 
-This project is part of the Hari Libur Indo initiative.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 👤 Author
+
+**Rizky Yusfian**
+
+- Website: [rizkyyusfian.dev](https://rizkyyusfian.dev)
+- GitHub: [@rizkyyusfian](https://github.com/rizkyyusfian)
+
+---
+
+<p align="center">
+  Made with ☕ in Papua Barat Daya, Indonesia
+  <br>
+  <sub>© 2026 MRYY</sub>
+</p>
 
