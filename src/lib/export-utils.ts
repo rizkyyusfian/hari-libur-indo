@@ -1,7 +1,24 @@
 // This module provides utilities for exporting calendar
 // The actual dependencies (html2canvas, jspdf) need to be loaded dynamically
 
+// Suppress console warnings during export (html2canvas doesn't support lab() colors from Tailwind v4)
+const suppressColorWarnings = () => {
+  const originalWarn = console.warn;
+  console.warn = (...args) => {
+    const message = args[0]?.toString() || '';
+    if (message.includes('unsupported color function') || message.includes('lab')) {
+      return; // Suppress this warning
+    }
+    originalWarn.apply(console, args);
+  };
+  return () => {
+    console.warn = originalWarn;
+  };
+};
+
 export const exportAsImage = async (elementId: string): Promise<void> => {
+  const restoreConsole = suppressColorWarnings();
+  
   try {
     // Dynamic import for client-side only
     const html2canvasModule = await import('html2canvas');
@@ -11,6 +28,7 @@ export const exportAsImage = async (elementId: string): Promise<void> => {
     if (!element) {
       console.error(`Element with id "${elementId}" not found`);
       alert(`Element kalender tidak ditemukan. Pastikan kalender sudah dimuat.`);
+      restoreConsole();
       return;
     }
 
@@ -19,9 +37,6 @@ export const exportAsImage = async (elementId: string): Promise<void> => {
     
     // Wait for rendering to complete
     await new Promise(resolve => setTimeout(resolve, 300));
-
-    // Get element's bounding rect for proper positioning
-    const rect = element.getBoundingClientRect();
     
     const canvas = await html2canvas(element, {
       scale: 2,
@@ -35,22 +50,23 @@ export const exportAsImage = async (elementId: string): Promise<void> => {
       y: 0,
       width: element.scrollWidth,
       height: element.scrollHeight,
-      onclone: (clonedDoc) => {
-        // Ensure the cloned element has white background
-        const clonedElement = clonedDoc.getElementById(elementId);
-        if (clonedElement) {
-          clonedElement.style.backgroundColor = '#ffffff';
-          // Remove dark mode classes
-          clonedElement.classList.remove('dark');
-          // Set all text to dark color
-          const allElements = clonedElement.querySelectorAll('*');
-          allElements.forEach((el) => {
-            const htmlEl = el as HTMLElement;
-            if (htmlEl.style) {
-              htmlEl.classList.remove('dark:bg-slate-900', 'dark:text-gray-100', 'dark:text-white');
-            }
-          });
-        }
+      ignoreElements: (el) => {
+        // Ignore elements that might cause issues
+        return el.tagName === 'SCRIPT' || el.tagName === 'STYLE';
+      },
+      onclone: (clonedDoc, clonedElement) => {
+        // Force white background
+        clonedElement.style.backgroundColor = '#ffffff';
+        
+        // Remove dark mode class from html
+        clonedDoc.documentElement.classList.remove('dark');
+        
+        // Remove dark mode classes from all elements
+        clonedElement.querySelectorAll('*').forEach((child) => {
+          if (child instanceof HTMLElement) {
+            child.className = child.className.replace(/dark:[^\s]+/g, '');
+          }
+        });
       }
     });
 
@@ -63,10 +79,14 @@ export const exportAsImage = async (elementId: string): Promise<void> => {
   } catch (error) {
     console.error('Failed to export as image:', error);
     alert('Gagal mengekspor gambar. Silakan coba lagi.');
+  } finally {
+    restoreConsole();
   }
 };
 
 export const exportAsPDF = async (elementId: string): Promise<void> => {
+  const restoreConsole = suppressColorWarnings();
+  
   try {
     // Dynamic imports for client-side only
     const jsPDFModule = await import('jspdf');
@@ -78,6 +98,7 @@ export const exportAsPDF = async (elementId: string): Promise<void> => {
     if (!element) {
       console.error(`Element with id "${elementId}" not found`);
       alert(`Element kalender tidak ditemukan. Pastikan kalender sudah dimuat.`);
+      restoreConsole();
       return;
     }
 
@@ -99,12 +120,18 @@ export const exportAsPDF = async (elementId: string): Promise<void> => {
       y: 0,
       width: element.scrollWidth,
       height: element.scrollHeight,
-      onclone: (clonedDoc) => {
-        // Ensure the cloned element has white background
-        const clonedElement = clonedDoc.getElementById(elementId);
-        if (clonedElement) {
-          clonedElement.style.backgroundColor = '#ffffff';
-        }
+      ignoreElements: (el) => {
+        return el.tagName === 'SCRIPT' || el.tagName === 'STYLE';
+      },
+      onclone: (clonedDoc, clonedElement) => {
+        clonedElement.style.backgroundColor = '#ffffff';
+        clonedDoc.documentElement.classList.remove('dark');
+        
+        clonedElement.querySelectorAll('*').forEach((child) => {
+          if (child instanceof HTMLElement) {
+            child.className = child.className.replace(/dark:[^\s]+/g, '');
+          }
+        });
       }
     });
 
@@ -125,5 +152,7 @@ export const exportAsPDF = async (elementId: string): Promise<void> => {
   } catch (error) {
     console.error('Failed to export as PDF:', error);
     alert('Gagal mengekspor PDF. Silakan coba lagi.');
+  } finally {
+    restoreConsole();
   }
 };

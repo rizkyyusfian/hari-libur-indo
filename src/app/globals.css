@@ -5,11 +5,14 @@
 :root {
   --background: #ffffff;
   --foreground: #003049;
+  /* Force standard color space for export compatibility */
+  color-scheme: light;
 }
 
 .dark {
   --background: #020617;
   --foreground: #ffffff;
+  color-scheme: dark;
 }
 
 @theme inline {
@@ -31,6 +34,12 @@ html {
 
 * {
   @apply transition-colors duration-200;
+}
+
+/* Force sRGB colors for export compatibility with html2canvas */
+#calendar-export,
+#calendar-export * {
+  forced-color-adjust: none;
 }
 
 /* Toast animation */
