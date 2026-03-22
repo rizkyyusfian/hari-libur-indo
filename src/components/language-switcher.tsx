@@ -16,16 +16,6 @@ export function LanguageSwitcher() {
   };
 
   return (
-<<<<<<< HEAD
-    <button
-      onClick={toggleLanguage}
-      className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-[#003049] dark:text-gray-300 hover:bg-[#669bbc]/20 dark:hover:bg-slate-800 transition"
-      title={`Switch to ${language === 'id' ? 'English' : 'Indonesian'}`}
-    >
-      <Globe size={18} />
-      <span className="hidden sm:inline">{language.toUpperCase()}</span>
-    </button>
-=======
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
@@ -52,6 +42,5 @@ export function LanguageSwitcher() {
         </div>
       )}
     </div>
->>>>>>> main
   );
 }

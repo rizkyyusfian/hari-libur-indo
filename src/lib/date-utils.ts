@@ -1,4 +1,4 @@
-import { format, isWeekend as dfIsWeekend, isSameDay, isAfter, isBefore, startOfDay } from 'date-fns';
+import { format, isWeekend as dfIsWeekend, isSameDay, addDays, isAfter, isBefore, startOfDay, isWithinInterval } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
 
 export type Holiday = {
@@ -37,16 +37,15 @@ export const getDayNameIndonesian = (date: Date): string => {
 };
 
 // Check if date is a holiday
-export const isHoliday = (date: Date, holidays: Holiday[]): Holiday | null => {
+export const isHoliday = (date: Date, holidays: Holiday[], regionFilter?: string): Holiday | null => {
   const dateStart = startOfDay(date);
-  // Return any matching holiday
-  const found = holidays.find(h => isSameDay(h.date, dateStart));
+  const found = holidays.find(h => isSameDay(h.date, dateStart) && (!regionFilter || h.type === 'national' || h.region === regionFilter));
   return found || null;
 };
 
 // Check if date is weekend or holiday
-export const isOffDay = (date: Date, holidays: Holiday[]): boolean => {
-  return dfIsWeekend(date) || !!isHoliday(date, holidays);
+export const isOffDay = (date: Date, holidays: Holiday[], regionFilter?: string): boolean => {
+  return dfIsWeekend(date) || !!isHoliday(date, holidays, regionFilter);
 };
 
 // Get all weekends in a month
@@ -63,7 +62,7 @@ export const getWeekendsInMonth = (year: number, month: number): Date[] => {
 };
 
 // Detect long weekends (3+ consecutive off days)
-export const detectLongWeekends = (holidays: Holiday[], year?: number): LongWeekend[] => {
+export const detectLongWeekends = (holidays: Holiday[], year?: number, regionFilter?: string): LongWeekend[] => {
   const startDate = new Date(year || new Date().getFullYear(), 0, 1);
   const endDate = new Date(year || new Date().getFullYear(), 11, 31);
   const longWeekends: LongWeekend[] = [];
@@ -74,8 +73,8 @@ export const detectLongWeekends = (holidays: Holiday[], year?: number): LongWeek
 
   const date = new Date(startDate);
   while (isBefore(date, endDate) || isSameDay(date, endDate)) {
-    const offDay = isOffDay(date, holidays);
-    const holiday = isHoliday(date, holidays);
+    const offDay = isOffDay(date, holidays, regionFilter);
+    const holiday = isHoliday(date, holidays, regionFilter);
     const weekend = dfIsWeekend(date);
 
     if (offDay) {
@@ -128,9 +127,9 @@ export const detectLongWeekends = (holidays: Holiday[], year?: number): LongWeek
 };
 
 // Get next holiday or long weekend
-export const getNextOffPeriod = (from: Date, holidays: Holiday[]): { type: 'holiday' | 'long-weekend'; date?: Date; daysUntil: number; details?: Holiday | LongWeekend } | null => {
-  const nextHoliday = holidays.find(h => isAfter(h.date, from));
-  const longWeekends = detectLongWeekends(holidays, from.getFullYear());
+export const getNextOffPeriod = (from: Date, holidays: Holiday[], regionFilter?: string): { type: 'holiday' | 'long-weekend'; date?: Date; daysUntil: number; details?: Holiday | LongWeekend } | null => {
+  const nextHoliday = holidays.find(h => isAfter(h.date, from) && (!regionFilter || h.type === 'national' || h.region === regionFilter));
+  const longWeekends = detectLongWeekends(holidays, from.getFullYear(), regionFilter);
   const nextLongWeekend = longWeekends.find(lw => isAfter(lw.start, from));
 
   if (nextHoliday && (!nextLongWeekend || isBefore(nextHoliday.date, nextLongWeekend.start))) {
@@ -147,16 +146,12 @@ export const getNextOffPeriod = (from: Date, holidays: Holiday[]): { type: 'holi
 };
 
 // Get days until next off day
-<<<<<<< HEAD
-export const getDaysUntilNextOffDay = (from: Date, holidays: Holiday[]): number => {
-=======
 export const getDaysUntilNextOffDay = (from: Date, holidays: Holiday[], regionFilter?: string): number => {
->>>>>>> main
   const date = new Date(from);
   date.setDate(date.getDate() + 1);
 
   for (let i = 0; i < 365; i++) {
-    if (isOffDay(date, holidays)) {
+    if (isOffDay(date, holidays, regionFilter)) {
       return i + 1;
     }
     date.setDate(date.getDate() + 1);

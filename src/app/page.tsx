@@ -8,13 +8,9 @@ import { SummaryCard } from '@/components/summary-card';
 import { Calendar } from '@/components/calendar';
 import { LongWeekendList } from '@/components/long-weekend-list';
 import { ExportControls } from '@/components/export-controls';
-<<<<<<< HEAD
 import { TimezoneInfo } from '@/components/timezone-info';
 import DocumentReference from '@/components/document-reference';
 import { getHolidays } from '@/lib/supabase-queries';
-=======
-import { mockHolidays } from '@/lib/mock-data';
->>>>>>> main
 import { Holiday } from '@/lib/date-utils';
 
 export default function Home() {
@@ -54,7 +50,6 @@ export default function Home() {
   }
 
   return (
-<<<<<<< HEAD
     <div className="min-h-screen bg-white dark:bg-slate-950 transition-colors">
       <Header />
 
@@ -72,29 +67,9 @@ export default function Home() {
             <SummaryCard holidays={holidays} />
             <TimezoneInfo />
             <ExportControls />
-=======
-    <div className="min-h-screen bg-cream dark:bg-darkblue">
-      <Header />
-
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Left Column - Main Content */}
-          <div className="lg:col-span-3 space-y-6">
-            <SummaryCard holidays={filteredHolidays} regionFilter={regionFilter} />
-            <Calendar holidays={filteredHolidays} regionFilter={regionFilter} />
-            <LongWeekendList holidays={filteredHolidays} regionFilter={regionFilter} />
-            <CutiPlanner holidays={filteredHolidays} regionFilter={regionFilter} />
->>>>>>> main
-          </div>
-
-          {/* Right Column - Sidebar */}
-          <div className="lg:col-span-1 space-y-6">
-            <ToggleRegion regions={['national', 'Papua Barat Daya', 'Jawa', 'Sumatera', 'Kalimantan', 'Sulawesi', 'Nusa Tenggara', 'Maluku']} onChange={setRegionFilter} value={regionFilter} />
-            <ExportControls />
           </div>
         </div>
 
-<<<<<<< HEAD
         {/* Footer */}
         <footer className="mt-12 pt-8 border-t border-[#003049]/10 dark:border-slate-800">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-[#003049]/70 dark:text-gray-400">
@@ -122,13 +97,6 @@ export default function Home() {
             </a>
           </div>
         </footer>
-=======
-        {/* Footer Info */}
-        <div className="mt-12 text-center text-sm text-burgundy dark:text-lightblue">
-          <p className="font-semibold">🇮🇩 Hari Libur Indonesia - Papua Barat Daya</p>
-          <p className="mt-1">Data libur diperbarui untuk tahun 2026</p>
-        </div>
->>>>>>> main
       </main>
     </div>
   );
