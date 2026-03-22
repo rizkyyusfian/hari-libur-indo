@@ -1,34 +1,14 @@
 // This module provides utilities for exporting calendar
-// The actual dependencies (html2canvas, jspdf) need to be loaded dynamically
+// Using html-to-image instead of html2canvas (better support for modern CSS like lab() colors)
 
-// Suppress console warnings during export (html2canvas doesn't support lab() colors from Tailwind v4)
-const suppressColorWarnings = () => {
-  const originalWarn = console.warn;
-  console.warn = (...args) => {
-    const message = args[0]?.toString() || '';
-    if (message.includes('unsupported color function') || message.includes('lab')) {
-      return; // Suppress this warning
-    }
-    originalWarn.apply(console, args);
-  };
-  return () => {
-    console.warn = originalWarn;
-  };
-};
+import * as htmlToImage from 'html-to-image';
 
 export const exportAsImage = async (elementId: string): Promise<void> => {
-  const restoreConsole = suppressColorWarnings();
-  
   try {
-    // Dynamic import for client-side only
-    const html2canvasModule = await import('html2canvas');
-    const html2canvas = html2canvasModule.default;
-    
     const element = document.getElementById(elementId);
     if (!element) {
       console.error(`Element with id "${elementId}" not found`);
       alert(`Element kalender tidak ditemukan. Pastikan kalender sudah dimuat.`);
-      restoreConsole();
       return;
     }
 
@@ -38,40 +18,26 @@ export const exportAsImage = async (elementId: string): Promise<void> => {
     // Wait for rendering to complete
     await new Promise(resolve => setTimeout(resolve, 300));
     
-    const canvas = await html2canvas(element, {
-      scale: 2,
-      useCORS: true,
-      logging: false,
+    const dataUrl = await htmlToImage.toPng(element, {
+      quality: 1,
+      pixelRatio: 2,
       backgroundColor: '#ffffff',
-      allowTaint: true,
-      windowWidth: document.documentElement.scrollWidth,
-      windowHeight: document.documentElement.scrollHeight,
-      x: 0,
-      y: 0,
-      width: element.scrollWidth,
-      height: element.scrollHeight,
-      ignoreElements: (el) => {
-        // Ignore elements that might cause issues
-        return el.tagName === 'SCRIPT' || el.tagName === 'STYLE';
+      style: {
+        // Ensure light mode styling
+        colorScheme: 'light',
       },
-      onclone: (clonedDoc, clonedElement) => {
-        // Force white background
-        clonedElement.style.backgroundColor = '#ffffff';
-        
-        // Remove dark mode class from html
-        clonedDoc.documentElement.classList.remove('dark');
-        
-        // Remove dark mode classes from all elements
-        clonedElement.querySelectorAll('*').forEach((child) => {
-          if (child instanceof HTMLElement) {
-            child.className = child.className.replace(/dark:[^\s]+/g, '');
-          }
-        });
-      }
+      filter: (node) => {
+        // Filter out script and style tags
+        if (node instanceof Element) {
+          const tagName = node.tagName?.toLowerCase();
+          return tagName !== 'script' && tagName !== 'noscript';
+        }
+        return true;
+      },
     });
 
     const link = document.createElement('a');
-    link.href = canvas.toDataURL('image/png');
+    link.href = dataUrl;
     link.download = `hari-libur-${new Date().getFullYear()}.png`;
     document.body.appendChild(link);
     link.click();
@@ -79,26 +45,19 @@ export const exportAsImage = async (elementId: string): Promise<void> => {
   } catch (error) {
     console.error('Failed to export as image:', error);
     alert('Gagal mengekspor gambar. Silakan coba lagi.');
-  } finally {
-    restoreConsole();
   }
 };
 
 export const exportAsPDF = async (elementId: string): Promise<void> => {
-  const restoreConsole = suppressColorWarnings();
-  
   try {
-    // Dynamic imports for client-side only
+    // Dynamic import for jspdf
     const jsPDFModule = await import('jspdf');
     const jsPDF = jsPDFModule.jsPDF;
-    const html2canvasModule = await import('html2canvas');
-    const html2canvas = html2canvasModule.default;
     
     const element = document.getElementById(elementId);
     if (!element) {
       console.error(`Element with id "${elementId}" not found`);
       alert(`Element kalender tidak ditemukan. Pastikan kalender sudah dimuat.`);
-      restoreConsole();
       return;
     }
 
@@ -108,38 +67,32 @@ export const exportAsPDF = async (elementId: string): Promise<void> => {
     // Wait for rendering to complete
     await new Promise(resolve => setTimeout(resolve, 300));
 
-    const canvas = await html2canvas(element, {
-      scale: 2,
-      useCORS: true,
-      logging: false,
+    const dataUrl = await htmlToImage.toPng(element, {
+      quality: 1,
+      pixelRatio: 2,
       backgroundColor: '#ffffff',
-      allowTaint: true,
-      windowWidth: document.documentElement.scrollWidth,
-      windowHeight: document.documentElement.scrollHeight,
-      x: 0,
-      y: 0,
-      width: element.scrollWidth,
-      height: element.scrollHeight,
-      ignoreElements: (el) => {
-        return el.tagName === 'SCRIPT' || el.tagName === 'STYLE';
+      style: {
+        colorScheme: 'light',
       },
-      onclone: (clonedDoc, clonedElement) => {
-        clonedElement.style.backgroundColor = '#ffffff';
-        clonedDoc.documentElement.classList.remove('dark');
-        
-        clonedElement.querySelectorAll('*').forEach((child) => {
-          if (child instanceof HTMLElement) {
-            child.className = child.className.replace(/dark:[^\s]+/g, '');
-          }
-        });
-      }
+      filter: (node) => {
+        if (node instanceof Element) {
+          const tagName = node.tagName?.toLowerCase();
+          return tagName !== 'script' && tagName !== 'noscript';
+        }
+        return true;
+      },
     });
 
-    const imgData = canvas.toDataURL('image/png');
+    // Create an image to get dimensions
+    const img = new Image();
+    await new Promise<void>((resolve, reject) => {
+      img.onload = () => resolve();
+      img.onerror = reject;
+      img.src = dataUrl;
+    });
     
-    // Calculate dimensions to fit on page
-    const imgWidth = canvas.width;
-    const imgHeight = canvas.height;
+    const imgWidth = img.width;
+    const imgHeight = img.height;
     
     const pdf = new jsPDF({
       orientation: imgWidth > imgHeight ? 'landscape' : 'portrait',
@@ -147,12 +100,10 @@ export const exportAsPDF = async (elementId: string): Promise<void> => {
       format: [imgWidth / 2, imgHeight / 2], // Scale down for reasonable file size
     });
 
-    pdf.addImage(imgData, 'PNG', 0, 0, imgWidth / 2, imgHeight / 2);
+    pdf.addImage(dataUrl, 'PNG', 0, 0, imgWidth / 2, imgHeight / 2);
     pdf.save(`hari-libur-${new Date().getFullYear()}.pdf`);
   } catch (error) {
     console.error('Failed to export as PDF:', error);
     alert('Gagal mengekspor PDF. Silakan coba lagi.');
-  } finally {
-    restoreConsole();
   }
 };
