@@ -24,9 +24,14 @@ export function Calendar({ holidays }: CalendarProps) {
   const loadRegionalDoc = async () => {
     try {
       const doc = await getRegionalDocument(currentDate.getFullYear(), 'papua_barat_daya');
+      if (!doc) {
+        console.warn('[Calendar] Regional document not found for year:', currentDate.getFullYear());
+      } else if (!doc.file_url) {
+        console.warn('[Calendar] Regional document found but file_url is missing:', doc);
+      }
       setRegionalDoc(doc);
     } catch (error) {
-      console.error('Error loading regional document:', error);
+      console.error('[Calendar] Error loading regional document:', error);
     }
   };
 

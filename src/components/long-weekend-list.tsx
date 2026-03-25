@@ -31,9 +31,14 @@ export function LongWeekendList({ holidays, year }: LongWeekendListProps) {
   const loadRegionalDoc = async () => {
     try {
       const doc = await getRegionalDocument(currentYear, 'papua_barat_daya');
+      if (!doc) {
+        console.warn('[LongWeekendList] Regional document not found for year:', currentYear);
+      } else if (!doc.file_url) {
+        console.warn('[LongWeekendList] Regional document found but file_url is missing:', doc);
+      }
       setRegionalDoc(doc);
     } catch (error) {
-      console.error('Error loading regional document:', error);
+      console.error('[LongWeekendList] Error loading regional document:', error);
     }
   };
 

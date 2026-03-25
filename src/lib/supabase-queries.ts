@@ -168,7 +168,10 @@ export async function getActiveDocument(year?: number): Promise<Document | null>
 // Get regional document for a specific year and region
 export async function getRegionalDocument(year: number, regionCode: string): Promise<Document | null> {
   const region = await getRegionByCode(regionCode);
-  if (!region) return null;
+  if (!region) {
+    console.warn('[getRegionalDocument] Region not found:', regionCode);
+    return null;
+  }
 
   const { data, error } = await supabase
     .from('documents')
@@ -182,7 +185,15 @@ export async function getRegionalDocument(year: number, regionCode: string): Pro
     .eq('year', year)
     .limit(1);
   
-  if (error) return null;
+  if (error) {
+    console.error('[getRegionalDocument] Supabase error:', error);
+    return null;
+  }
+  
+  if (!data || data.length === 0) {
+    console.warn('[getRegionalDocument] No active regional document found for:', { year, regionCode, regionId: region.id });
+  }
+  
   return data?.[0] || null;
 }
 
