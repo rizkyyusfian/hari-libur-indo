@@ -7,11 +7,23 @@ import { getRegionalDocument, Document } from '@/lib/supabase-queries';
 
 interface CalendarProps {
   holidays: Holiday[];
+  viewMode: 'month' | 'year';
+  focusDate: Date;
+  onViewModeChange: (mode: 'month' | 'year') => void;
+  onFocusDateChange: (date: Date) => void;
+  showWFHFriday: boolean;
+  onShowWFHFridayChange: (enabled: boolean) => void;
 }
 
-export function Calendar({ holidays }: CalendarProps) {
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const [viewMode, setViewMode] = useState<'month' | 'year'>('month');
+export function Calendar({
+  holidays,
+  viewMode,
+  focusDate,
+  onViewModeChange,
+  onFocusDateChange,
+  showWFHFriday,
+  onShowWFHFridayChange,
+}: CalendarProps) {
   const [hoveredDate, setHoveredDate] = useState<Date | null>(null);
   const [popoverPosition, setPopoverPosition] = useState({ x: 0, y: 0 });
   const [regionalDoc, setRegionalDoc] = useState<Document | null>(null);
@@ -19,13 +31,13 @@ export function Calendar({ holidays }: CalendarProps) {
   useEffect(() => {
     loadRegionalDoc();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentDate.getFullYear()]);
+  }, [focusDate.getFullYear()]);
 
   const loadRegionalDoc = async () => {
     try {
-      const doc = await getRegionalDocument(currentDate.getFullYear(), 'papua_barat_daya');
+      const doc = await getRegionalDocument(focusDate.getFullYear(), 'papua_barat_daya');
       if (!doc) {
-        console.warn('[Calendar] Regional document not found for year:', currentDate.getFullYear());
+        console.warn('[Calendar] Regional document not found for year:', focusDate.getFullYear());
       } else if (!doc.file_url) {
         console.warn('[Calendar] Regional document found but file_url is missing:', doc);
       }
@@ -67,19 +79,24 @@ export function Calendar({ holidays }: CalendarProps) {
   };
 
   const prevMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1));
+    onFocusDateChange(new Date(focusDate.getFullYear(), focusDate.getMonth() - 1, 1));
   };
 
   const nextMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1));
+    onFocusDateChange(new Date(focusDate.getFullYear(), focusDate.getMonth() + 1, 1));
   };
 
   const prevYear = () => {
-    setCurrentDate(new Date(currentDate.getFullYear() - 1, 0, 1));
+    onFocusDateChange(new Date(focusDate.getFullYear() - 1, focusDate.getMonth(), 1));
   };
 
   const nextYear = () => {
-    setCurrentDate(new Date(currentDate.getFullYear() + 1, 0, 1));
+    onFocusDateChange(new Date(focusDate.getFullYear() + 1, focusDate.getMonth(), 1));
+  };
+
+  const backToToday = () => {
+    onFocusDateChange(new Date());
+    onViewModeChange('month');
   };
 
   const dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
@@ -89,6 +106,7 @@ export function Calendar({ holidays }: CalendarProps) {
   const getDayClasses = (date: Date) => {
     const holiday = isHoliday(date, holidays);
     const weekend = isWeekend(date);
+    const fridayWFH = showWFHFriday && date.getDay() === 5;
     const isToday = date.toDateString() === today.toDateString();
 
     let bgClass = 'bg-white dark:bg-slate-800';
@@ -113,6 +131,10 @@ export function Calendar({ holidays }: CalendarProps) {
       bgClass = 'bg-white dark:bg-slate-800';
       textClass = 'text-[#c1121f] dark:text-[#c1121f]';
       borderClass = 'border border-transparent';
+    } else if (fridayWFH) {
+      bgClass = 'bg-[#669bbc]/15 dark:bg-[#669bbc]/20';
+      textClass = 'text-[#003049] dark:text-[#669bbc] font-medium';
+      borderClass = 'border border-[#669bbc]/50';
     }
 
     return { bgClass, textClass, borderClass };
@@ -173,7 +195,7 @@ export function Calendar({ holidays }: CalendarProps) {
                 className={`${compact ? 'aspect-square text-[10px]' : 'aspect-square text-sm'} rounded ${bgClass} ${textClass} ${borderClass} flex items-center justify-center cursor-pointer transition hover:ring-2 hover:ring-[#669bbc]/50`}
                 onMouseEnter={(e) => handleMouseEnter(date, e)}
                 onMouseLeave={handleMouseLeave}
-                title={holiday?.name || ''}
+                title={holiday?.name || (showWFHFriday && date.getDay() === 5 ? 'WFH Jumat' : '')}
               >
                 {date.getDate()}
               </div>
@@ -186,13 +208,13 @@ export function Calendar({ holidays }: CalendarProps) {
 
   // Get holidays for current month (monthly view)
   const monthHolidays = holidays.filter(h => {
-    return h.date.getMonth() === currentDate.getMonth() && 
-           h.date.getFullYear() === currentDate.getFullYear();
+    return h.date.getMonth() === focusDate.getMonth() && 
+           h.date.getFullYear() === focusDate.getFullYear();
   }).sort((a, b) => a.date.getTime() - b.date.getTime());
 
   // Get holidays for current year (yearly view)
   const yearHolidays = holidays.filter(h => {
-    return h.date.getFullYear() === currentDate.getFullYear();
+    return h.date.getFullYear() === focusDate.getFullYear();
   }).sort((a, b) => a.date.getTime() - b.date.getTime());
 
   return (
@@ -202,22 +224,40 @@ export function Calendar({ holidays }: CalendarProps) {
         <div className="flex items-center gap-2">
           <h2 className="text-lg font-semibold text-[#003049] dark:text-gray-100 capitalize">
             {viewMode === 'month' 
-              ? currentDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
-              : currentDate.getFullYear()}
+              ? focusDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
+              : focusDate.getFullYear()}
           </h2>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => onShowWFHFridayChange(!showWFHFriday)}
+            className={`px-2 py-1 text-xs rounded-md border transition ${
+              showWFHFriday
+                ? 'bg-[#669bbc]/20 border-[#669bbc]/50 text-[#003049] dark:text-[#669bbc]'
+                : 'bg-white dark:bg-slate-800 border-[#003049]/20 dark:border-slate-700 text-[#003049]/70 dark:text-gray-300'
+            }`}
+            title="Tampilkan WFH setiap Jumat"
+          >
+            WFH Jumat: {showWFHFriday ? 'On' : 'Off'}
+          </button>
+          <button
+            onClick={backToToday}
+            className="px-2 py-1 text-xs rounded-md border border-[#003049]/20 dark:border-slate-700 text-[#003049] dark:text-gray-100 hover:bg-[#669bbc]/20 dark:hover:bg-slate-800 transition"
+            title="Kembali ke tanggal hari ini"
+          >
+            Hari Ini
+          </button>
           {/* View toggle */}
           <div className="flex bg-gray-100 dark:bg-slate-800 rounded-lg p-1">
             <button
-              onClick={() => setViewMode('month')}
+              onClick={() => onViewModeChange('month')}
               className={`p-1.5 rounded ${viewMode === 'month' ? 'bg-white dark:bg-slate-700 shadow-sm' : ''}`}
               title="Tampilan Bulanan"
             >
               <CalendarIcon size={16} className="text-[#003049] dark:text-gray-300" />
             </button>
             <button
-              onClick={() => setViewMode('year')}
+              onClick={() => onViewModeChange('year')}
               className={`p-1.5 rounded ${viewMode === 'year' ? 'bg-white dark:bg-slate-700 shadow-sm' : ''}`}
               title="Tampilan Tahunan"
             >
@@ -243,7 +283,7 @@ export function Calendar({ holidays }: CalendarProps) {
       {/* Calendar View */}
       {viewMode === 'month' ? (
         <>
-          {renderMonth(currentDate)}
+          {renderMonth(focusDate)}
           
           {/* Legend */}
           <div className="flex flex-wrap gap-4 mt-4 pt-4 border-t border-[#003049]/10 dark:border-slate-700">
@@ -323,7 +363,7 @@ export function Calendar({ holidays }: CalendarProps) {
           <div className="grid grid-cols-4 gap-4">
             {Array.from({ length: 12 }, (_, i) => (
               <div key={i} className="border border-[#003049]/10 dark:border-slate-700 rounded-lg p-2">
-                {renderMonth(new Date(currentDate.getFullYear(), i, 1), true)}
+                {renderMonth(new Date(focusDate.getFullYear(), i, 1), true)}
               </div>
             ))}
           </div>
@@ -332,7 +372,7 @@ export function Calendar({ holidays }: CalendarProps) {
           {yearHolidays.length > 0 && (
             <div className="mt-6 pt-4 border-t border-[#003049]/10 dark:border-slate-700">
               <h3 className="text-sm font-semibold text-[#003049] dark:text-gray-100 mb-3">
-                Daftar Hari Libur Tahun {currentDate.getFullYear()} ({yearHolidays.length})
+                Daftar Hari Libur Tahun {focusDate.getFullYear()} ({yearHolidays.length})
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                 {yearHolidays.map((holiday, idx) => (
@@ -405,6 +445,8 @@ export function Calendar({ holidays }: CalendarProps) {
               );
             } else if (weekend) {
               return <p className="text-xs mt-1 text-[#003049]/60 dark:text-gray-400">Akhir Pekan</p>;
+            } else if (showWFHFriday && hoveredDate.getDay() === 5) {
+              return <p className="text-xs mt-1 text-[#003049]/60 dark:text-gray-400">WFH Jumat</p>;
             } else {
               return <p className="text-xs mt-1 text-[#003049]/60 dark:text-gray-400">Hari Kerja</p>;
             }

@@ -18,6 +18,10 @@ export type LongWeekend = {
   reason: string[];
 };
 
+type OffDayOptions = {
+  includeFridayAsOffDay?: boolean;
+};
+
 // Re-export date-fns utilities
 export const isWeekend = dfIsWeekend;
 
@@ -44,8 +48,9 @@ export const isHoliday = (date: Date, holidays: Holiday[], regionFilter?: string
 };
 
 // Check if date is weekend or holiday
-export const isOffDay = (date: Date, holidays: Holiday[], regionFilter?: string): boolean => {
-  return dfIsWeekend(date) || !!isHoliday(date, holidays, regionFilter);
+export const isOffDay = (date: Date, holidays: Holiday[], regionFilter?: string, options?: OffDayOptions): boolean => {
+  const fridayAsOffDay = options?.includeFridayAsOffDay && date.getDay() === 5;
+  return dfIsWeekend(date) || fridayAsOffDay || !!isHoliday(date, holidays, regionFilter);
 };
 
 // Get all weekends in a month
@@ -62,7 +67,7 @@ export const getWeekendsInMonth = (year: number, month: number): Date[] => {
 };
 
 // Detect long weekends (3+ consecutive off days)
-export const detectLongWeekends = (holidays: Holiday[], year?: number, regionFilter?: string): LongWeekend[] => {
+export const detectLongWeekends = (holidays: Holiday[], year?: number, regionFilter?: string, options?: OffDayOptions): LongWeekend[] => {
   const startDate = new Date(year || new Date().getFullYear(), 0, 1);
   const endDate = new Date(year || new Date().getFullYear(), 11, 31);
   const longWeekends: LongWeekend[] = [];
@@ -73,9 +78,10 @@ export const detectLongWeekends = (holidays: Holiday[], year?: number, regionFil
 
   const date = new Date(startDate);
   while (isBefore(date, endDate) || isSameDay(date, endDate)) {
-    const offDay = isOffDay(date, holidays, regionFilter);
+    const offDay = isOffDay(date, holidays, regionFilter, options);
     const holiday = isHoliday(date, holidays, regionFilter);
     const weekend = dfIsWeekend(date);
+    const fridayAsOffDay = options?.includeFridayAsOffDay && date.getDay() === 5;
 
     if (offDay) {
       if (!currentStart) {
@@ -88,6 +94,8 @@ export const detectLongWeekends = (holidays: Holiday[], year?: number, regionFil
 
       if (holiday) {
         reasons.push(holiday.name);
+      } else if (fridayAsOffDay) {
+        reasons.push('Jumat');
       } else if (weekend) {
         reasons.push(getDayNameIndonesian(date));
       }

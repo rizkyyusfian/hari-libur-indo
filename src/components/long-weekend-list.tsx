@@ -8,7 +8,10 @@ import { getRegionalDocument, Document } from '@/lib/supabase-queries';
 
 interface LongWeekendListProps {
   holidays: Holiday[];
-  year?: number;
+  viewMode: 'month' | 'year';
+  focusDate: Date;
+  includeFridayInLongWeekend: boolean;
+  onIncludeFridayInLongWeekendChange: (enabled: boolean) => void;
 }
 
 interface DayDetail {
@@ -18,9 +21,22 @@ interface DayDetail {
   isRegional?: boolean;
 }
 
-export function LongWeekendList({ holidays, year }: LongWeekendListProps) {
-  const currentYear = year || new Date().getFullYear();
-  const longWeekends = detectLongWeekends(holidays, currentYear);
+export function LongWeekendList({
+  holidays,
+  viewMode,
+  focusDate,
+  includeFridayInLongWeekend,
+  onIncludeFridayInLongWeekendChange,
+}: LongWeekendListProps) {
+  const currentYear = focusDate.getFullYear();
+  const allLongWeekends = detectLongWeekends(holidays, currentYear, undefined, {
+    includeFridayAsOffDay: includeFridayInLongWeekend,
+  });
+  const monthStart = new Date(currentYear, focusDate.getMonth(), 1);
+  const monthEnd = new Date(currentYear, focusDate.getMonth() + 1, 0);
+  const longWeekends = viewMode === 'month'
+    ? allLongWeekends.filter(lw => lw.start <= monthEnd && lw.end >= monthStart)
+    : allLongWeekends;
   const [regionalDoc, setRegionalDoc] = useState<Document | null>(null);
 
   useEffect(() => {
@@ -59,6 +75,8 @@ export function LongWeekendList({ holidays, year }: LongWeekendListProps) {
         isRegional = holiday.type === 'regional';
       } else if (weekend) {
         info = current.getDay() === 0 ? 'Minggu' : 'Sabtu';
+      } else if (includeFridayInLongWeekend && current.getDay() === 5) {
+        info = 'Jumat';
       }
       
       days.push({
@@ -103,9 +121,21 @@ export function LongWeekendList({ holidays, year }: LongWeekendListProps) {
         <div className="flex items-center gap-2 mb-4">
           <Calendar size={18} className="text-[#669bbc]" />
           <h3 className="font-semibold text-[#003049] dark:text-gray-100">Long Weekend</h3>
+          <button
+            onClick={() => onIncludeFridayInLongWeekendChange(!includeFridayInLongWeekend)}
+            className={`ml-auto px-2 py-1 text-xs rounded-md border transition ${
+              includeFridayInLongWeekend
+                ? 'bg-[#669bbc]/20 border-[#669bbc]/50 text-[#003049] dark:text-[#669bbc]'
+                : 'bg-white dark:bg-slate-800 border-[#003049]/20 dark:border-slate-700 text-[#003049]/70 dark:text-gray-300'
+            }`}
+          >
+            Include Friday: {includeFridayInLongWeekend ? 'On' : 'Off'}
+          </button>
         </div>
         <p className="text-sm text-[#003049]/70 dark:text-gray-400 text-center py-8">
-          Tidak ada long weekend di tahun ini
+          {viewMode === 'month'
+            ? 'Tidak ada long weekend di bulan ini'
+            : 'Tidak ada long weekend di tahun ini'}
         </p>
       </div>
     );
@@ -118,6 +148,16 @@ export function LongWeekendList({ holidays, year }: LongWeekendListProps) {
         <h3 className="font-semibold text-[#003049] dark:text-gray-100">
           Long Weekend ({longWeekends.length})
         </h3>
+        <button
+          onClick={() => onIncludeFridayInLongWeekendChange(!includeFridayInLongWeekend)}
+          className={`ml-auto px-2 py-1 text-xs rounded-md border transition ${
+            includeFridayInLongWeekend
+              ? 'bg-[#669bbc]/20 border-[#669bbc]/50 text-[#003049] dark:text-[#669bbc]'
+              : 'bg-white dark:bg-slate-800 border-[#003049]/20 dark:border-slate-700 text-[#003049]/70 dark:text-gray-300'
+          }`}
+        >
+          Hitung Hari Jumat: {includeFridayInLongWeekend ? 'On' : 'Off'}
+        </button>
       </div>
 
       <div className="space-y-6">

@@ -17,6 +17,10 @@ export default function Home() {
   const [holidays, setHolidays] = useState<Holiday[]>([]);
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [calendarViewMode, setCalendarViewMode] = useState<'month' | 'year'>('month');
+  const [calendarFocusDate, setCalendarFocusDate] = useState(new Date());
+  const [showWFHFriday, setShowWFHFriday] = useState(false);
+  const [includeFridayInLongWeekend, setIncludeFridayInLongWeekend] = useState(false);
   const currentYear = new Date().getFullYear();
 
   useEffect(() => {
@@ -57,9 +61,23 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column */}
           <div className="lg:col-span-2 space-y-6">
-            <Calendar holidays={holidays} />
+            <Calendar
+              holidays={holidays}
+              viewMode={calendarViewMode}
+              focusDate={calendarFocusDate}
+              onViewModeChange={setCalendarViewMode}
+              onFocusDateChange={setCalendarFocusDate}
+              showWFHFriday={showWFHFriday}
+              onShowWFHFridayChange={setShowWFHFriday}
+            />
             <DocumentReference year={currentYear} />
-            <LongWeekendList holidays={holidays} />
+            <LongWeekendList
+              holidays={holidays}
+              viewMode={calendarViewMode}
+              focusDate={calendarFocusDate}
+              includeFridayInLongWeekend={includeFridayInLongWeekend}
+              onIncludeFridayInLongWeekendChange={setIncludeFridayInLongWeekend}
+            />
           </div>
 
           {/* Right Column */}
