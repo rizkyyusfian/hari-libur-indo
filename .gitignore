@@ -44,4 +44,4 @@ next-env.d.ts
 /docs
 
 # sql
-*.sql
+supabase-seed-2026.sql

@@ -17,7 +17,7 @@
 - 📥 **Export** — Download kalender sebagai PNG atau PDF
 - ⏰ **Timezone Aware** — Support WIB, WITA, WIT
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -43,18 +43,6 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) 🎉
-
-### Environment Variables
-
-```env
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_publishable_key
-# Optional fallback (legacy naming):
-# NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
-NEXT_PUBLIC_SUPABASE_BUCKET=your_bucket_name
-```
-
 ## 🛠️ Tech Stack
 
 | Category | Technology |
@@ -67,29 +55,6 @@ NEXT_PUBLIC_SUPABASE_BUCKET=your_bucket_name
 | Icons | Lucide React |
 | Export | html-to-image, jsPDF |
 
-## 📁 Project Structure
-
-```
-src/
-├── app/
-│   ├── page.tsx          # Main calendar page
-│   ├── about/            # About page
-│   └── admin/            # Admin panel (protected)
-├── components/
-│   ├── calendar.tsx      # Calendar component
-│   ├── summary-card.tsx  # Today's status
-│   ├── long-weekend-list.tsx
-│   ├── export-controls.tsx
-│   ├── document-reference.tsx
-│   └── ui/               # Reusable UI components
-├── lib/
-│   ├── supabase.ts       # Supabase client
-│   ├── date-utils.ts     # Date helpers
-│   └── export-utils.ts   # PNG/PDF export
-└── providers/
-    └── theme-provider.tsx
-```
-
 ## 🗄️ Database Setup
 
 Run the SQL in `supabase-schema.sql` to create tables:
@@ -98,54 +63,6 @@ Run the SQL in `supabase-schema.sql` to create tables:
 - `holidays` — Holiday entries (national & regional)
 - `documents` — Surat Edaran PDFs, including original documents, revisions, addendums, and cancellations
 - `holiday_documents` — Links specific holidays to the document(s) that support them
-
-<details>
-<summary>Quick Schema Overview</summary>
-
-```sql
--- Regions
-create table regions (
-  id uuid primary key default uuid_generate_v4(),
-  name text not null,
-  code text unique not null
-);
-
--- Holidays  
-create table holidays (
-  id uuid primary key default uuid_generate_v4(),
-  date date not null,
-  name text not null,
-  type text check (type in ('national', 'regional')),
-  region_id uuid references regions(id),
-  is_cuti_bersama boolean default false
-);
-
--- Documents
-create table documents (
-  id uuid primary key default uuid_generate_v4(),
-  title text not null,
-  file_url text not null,
-  year integer not null,
-  type text check (type in ('national', 'regional')),
-  region_id uuid references regions(id),
-  document_kind text check (document_kind in ('original', 'revision', 'addendum', 'cancellation')),
-  status text check (status in ('draft', 'published', 'archived', 'superseded')),
-  published_date date,
-  summary text,
-  supersedes_document_id uuid references documents(id),
-  is_active boolean default true
-);
-
--- Holiday source links
-create table holiday_documents (
-  holiday_id uuid references holidays(id),
-  document_id uuid references documents(id),
-  relation_type text check (relation_type in ('source', 'adds', 'revises', 'cancels')),
-  primary key (holiday_id, document_id)
-);
-```
-
-</details>
 
 ## 🔐 Admin Panel
 
