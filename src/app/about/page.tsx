@@ -3,15 +3,11 @@
 import { Github, Globe, Heart, MapPin, Code, Moon, Sun, Copyright, Info } from 'lucide-react';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
-import { useEffect, useState } from 'react';
+import { useMounted } from '@/lib/use-mounted';
 
 export default function AboutPage() {
   const { setTheme, resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useMounted();
 
   const toggleDarkMode = () => {
     setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
@@ -116,7 +112,7 @@ export default function AboutPage() {
               </p>
               <ul className="text-[#003049]/80 dark:text-gray-300 mt-2 space-y-1">
                 <li>• Copilot CLI (AI-assisted dev ftw)</li>
-                <li>• Next.js 15</li>
+                <li>• Next.js 16</li>
                 <li>• Tailwind CSS v4</li>
                 <li>• Supabase</li>
               </ul>

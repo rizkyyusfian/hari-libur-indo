@@ -28,7 +28,7 @@ export const timezones: TimezoneInfo[] = [
   },
 ];
 
-export const getTimezoneByProvinceOrCoords = (province?: string, latitude?: number, longitude?: number): TimezoneInfo => {
+export const getTimezoneByProvinceOrCoords = (province?: string): TimezoneInfo => {
   if (province) {
     const tz = timezones.find(t => t.provinces.some(p => p.toLowerCase().includes(province.toLowerCase())));
     if (tz) return tz;

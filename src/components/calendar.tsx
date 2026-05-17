@@ -47,25 +47,47 @@ export function Calendar({
     }
   };
 
-  // PBD Badge component - clickable if regional doc exists
-  const PBDBadge = () => {
-    if (regionalDoc?.file_url) {
+  const getPrimaryRegionalSource = (holiday: Holiday) =>
+    holiday.sourceDocuments?.find(d => d.documentKind === 'addendum') ||
+    holiday.sourceDocuments?.find(d => d.documentKind === 'revision') ||
+    holiday.sourceDocuments?.find(d => d.documentKind === 'cancellation') ||
+    holiday.sourceDocuments?.[0];
+
+  const PBDBadge = ({ holiday }: { holiday: Holiday }) => {
+    if (holiday.type !== 'regional') {
+      return null;
+    }
+
+    const source = getPrimaryRegionalSource(holiday);
+    const label =
+      source?.documentKind === 'addendum'
+        ? 'Tambahan'
+        : source?.documentKind === 'revision'
+          ? 'Revisi'
+          : source?.documentKind === 'cancellation'
+            ? 'Pembatalan'
+            : 'PBD';
+    const href = source?.fileUrl || regionalDoc?.file_url;
+    const title = source?.title || regionalDoc?.title || 'Dokumen PBD';
+
+    if (href) {
       return (
         <a
-          href={regionalDoc.file_url}
+          href={href}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 bg-[#003049]/10 dark:bg-[#669bbc]/20 text-[#003049] dark:text-[#669bbc] rounded font-medium hover:bg-[#003049]/20 dark:hover:bg-[#669bbc]/30 transition"
-          title={regionalDoc.title}
+          title={title}
         >
-          PBD
+          {label}
           <ExternalLink size={8} />
         </a>
       );
     }
+
     return (
       <span className="text-[10px] px-1.5 py-0.5 bg-[#003049]/10 dark:bg-[#669bbc]/20 text-[#003049] dark:text-[#669bbc] rounded font-medium">
-        PBD
+        {label}
       </span>
     );
   };
@@ -336,7 +358,7 @@ export function Calendar({
                         <p className="text-sm font-medium text-[#003049] dark:text-gray-100 truncate">
                           {holiday.name}
                         </p>
-                        {holiday.type === 'regional' && <PBDBadge />}
+                        <PBDBadge holiday={holiday} />
                       </div>
                       <p className="text-xs text-[#003049]/60 dark:text-gray-400">
                         {formatDateIndonesian(holiday.date)}
@@ -402,7 +424,7 @@ export function Calendar({
                         {holiday.isCutiBersama && (
                           <span className="text-[10px] text-[#c1121f]">Cuti Bersama</span>
                         )}
-                        {holiday.type === 'regional' && <PBDBadge />}
+                        <PBDBadge holiday={holiday} />
                       </div>
                     </div>
                   </div>
@@ -436,11 +458,9 @@ export function Calendar({
                     {holiday.name}
                     {holiday.isCutiBersama && ' (Cuti Bersama)'}
                   </p>
-                  {holiday.type === 'regional' && (
-                    <span className="inline-block mt-1 px-1.5 py-0.5 bg-[#003049]/10 dark:bg-[#669bbc]/20 text-[#003049] dark:text-[#669bbc] text-[10px] rounded font-medium">
-                      PBD
-                    </span>
-                  )}
+                  <div className="mt-1">
+                    <PBDBadge holiday={holiday} />
+                  </div>
                 </div>
               );
             } else if (weekend) {

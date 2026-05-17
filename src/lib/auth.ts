@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
 
 export async function signIn(email: string, password: string) {
   const { data, error } = await supabase.auth.signInWithPassword({
@@ -27,6 +28,6 @@ export async function getUser() {
   return user;
 }
 
-export function onAuthStateChange(callback: (event: string, session: any) => void) {
+export function onAuthStateChange(callback: (event: AuthChangeEvent, session: Session | null) => void) {
   return supabase.auth.onAuthStateChange(callback);
 }

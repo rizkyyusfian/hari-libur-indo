@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { signIn } from '@/lib/auth';
 import { LogIn, AlertCircle, Shield, Loader2 } from 'lucide-react';
 
@@ -20,8 +21,9 @@ export default function AdminLogin() {
     try {
       await signIn(email, password);
       router.push('/admin');
-    } catch (err: any) {
-      setError(err.message || 'Login gagal. Periksa email dan password.');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Login gagal. Periksa email dan password.';
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -99,12 +101,12 @@ export default function AdminLogin() {
           </form>
 
           <div className="mt-6 text-center">
-            <a
+            <Link
               href="/"
               className="text-sm text-[#669bbc] hover:text-[#003049] dark:hover:text-[#669bbc] transition"
             >
               Kembali ke Beranda
-            </a>
+            </Link>
           </div>
         </div>
       </div>

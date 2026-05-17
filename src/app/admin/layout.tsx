@@ -1,32 +1,45 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { getUser, signOut, onAuthStateChange } from '@/lib/auth';
 import { Home, Calendar, FileText, LogOut, Menu, X, Moon, Sun, Shield, Loader2, Copyright, ExternalLink } from 'lucide-react';
+import type { User } from '@supabase/supabase-js';
 import Link from 'next/link';
 import { ToastProvider } from '@/components/ui/toast';
+import { useMounted } from '@/lib/use-mounted';
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
-  const { theme, setTheme, resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  const { setTheme, resolvedTheme } = useTheme();
+  const mounted = useMounted();
 
   // Skip auth check for login page
   const isLoginPage = pathname === '/admin/login';
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const checkUser = useCallback(async () => {
+    try {
+      const currentUser = await getUser();
+      if (!currentUser) {
+        router.push('/admin/login');
+        return;
+      }
+      setUser(currentUser);
+    } catch {
+      router.push('/admin/login');
+    } finally {
+      setLoading(false);
+    }
+  }, [router]);
 
   useEffect(() => {
     if (isLoginPage) {
@@ -45,22 +58,7 @@ export default function AdminLayout({
     });
 
     return () => subscription.unsubscribe();
-  }, [router, isLoginPage]);
-
-  const checkUser = async () => {
-    try {
-      const currentUser = await getUser();
-      if (!currentUser) {
-        router.push('/admin/login');
-        return;
-      }
-      setUser(currentUser);
-    } catch {
-      router.push('/admin/login');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [router, isLoginPage, checkUser]);
 
   const handleSignOut = async () => {
     await signOut();

@@ -1,10 +1,48 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { FileText, Upload, Trash2, ExternalLink, Calendar, CheckCircle, Loader2, MapPin } from 'lucide-react';
-import { getDocuments, createDocument, deleteDocument, setActiveDocument, uploadPDF, Document, getRegions, Region } from '@/lib/supabase-queries';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { FileText, Upload, Trash2, ExternalLink, Calendar, CheckCircle, Loader2, MapPin, Archive } from 'lucide-react';
+import {
+  archiveDocument,
+  createDocument,
+  deleteDocument,
+  Document,
+  DocumentKind,
+  DocumentStatus,
+  getDocuments,
+  getRegions,
+  publishDocument,
+  Region,
+  uploadPDF,
+} from '@/lib/supabase-queries';
 import { useToast } from '@/components/ui/toast';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+
+const getInitialFormData = () => ({
+  title: '',
+  year: new Date().getFullYear(),
+  type: 'national' as 'national' | 'regional',
+  region_id: '',
+  document_kind: 'original' as DocumentKind,
+  status: 'published' as DocumentStatus,
+  published_date: '',
+  supersedes_document_id: '',
+  summary: '',
+});
+
+const documentKindLabels: Record<DocumentKind, string> = {
+  original: 'Dokumen utama',
+  revision: 'Revisi',
+  addendum: 'Tambahan',
+  cancellation: 'Pembatalan',
+};
+
+const statusLabels: Record<DocumentStatus, string> = {
+  draft: 'Draft',
+  published: 'Dipublikasikan',
+  archived: 'Diarsipkan',
+  superseded: 'Digantikan',
+};
 
 export default function DocumentsPage() {
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -16,19 +54,23 @@ export default function DocumentsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { showToast } = useToast();
 
-  const [formData, setFormData] = useState({
-    title: '',
-    year: new Date().getFullYear(),
-    type: 'national' as 'national' | 'regional',
-    region_id: '',
-  });
+  const [formData, setFormData] = useState(getInitialFormData());
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  const getErrorMessage = (error: unknown): string => {
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      'message' in error &&
+      typeof (error as { message?: unknown }).message === 'string'
+    ) {
+      return (error as { message: string }).message;
+    }
 
-  const loadData = async () => {
+    return 'Unknown error';
+  };
+
+  const loadData = useCallback(async () => {
     try {
       const [docsData, regionsData] = await Promise.all([
         getDocuments(),
@@ -42,7 +84,11 @@ export default function DocumentsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [showToast]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -78,11 +124,16 @@ export default function DocumentsPage() {
         file_path: filePath,
         type: formData.type,
         region_id: formData.type === 'regional' ? formData.region_id : undefined,
-        is_active: true,
+        document_kind: formData.document_kind,
+        status: formData.status,
+        published_date: formData.published_date || undefined,
+        supersedes_document_id: formData.supersedes_document_id || undefined,
+        summary: formData.summary || undefined,
+        is_active: formData.status === 'published',
       });
 
       // Reset form
-      setFormData({ title: '', year: new Date().getFullYear(), type: 'national', region_id: '' });
+      setFormData(getInitialFormData());
       setSelectedFile(null);
       setShowUploadForm(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -91,20 +142,37 @@ export default function DocumentsPage() {
       await loadData();
     } catch (error) {
       console.error('Error uploading document:', error);
-      showToast('Gagal mengunggah dokumen', 'error');
+      const message = getErrorMessage(error);
+
+      if (message.toLowerCase().includes('bucket')) {
+        showToast('Upload gagal: bucket storage belum siap. Jalankan ulang supabase-schema.sql', 'error');
+      } else {
+        showToast(`Gagal mengunggah dokumen: ${message}`, 'error');
+      }
     } finally {
       setUploading(false);
     }
   };
 
-  const handleSetActive = async (id: string) => {
+  const handlePublish = async (id: string) => {
     try {
-      await setActiveDocument(id);
-      showToast('Dokumen aktif berhasil diubah', 'success');
+      await publishDocument(id);
+      showToast('Dokumen berhasil dipublikasikan', 'success');
       await loadData();
     } catch (error) {
-      console.error('Error setting active document:', error);
-      showToast('Gagal mengubah dokumen aktif', 'error');
+      console.error('Error publishing document:', error);
+      showToast('Gagal mempublikasikan dokumen', 'error');
+    }
+  };
+
+  const handleArchive = async (id: string) => {
+    try {
+      await archiveDocument(id);
+      showToast('Dokumen berhasil diarsipkan', 'success');
+      await loadData();
+    } catch (error) {
+      console.error('Error archiving document:', error);
+      showToast('Gagal mengarsipkan dokumen', 'error');
     }
   };
 
@@ -123,6 +191,11 @@ export default function DocumentsPage() {
   };
 
   const docToDelete = deleteId ? documents.find(d => d.id === deleteId) : null;
+  const supersedesOptions = documents.filter(doc =>
+    doc.year === formData.year &&
+    doc.type === formData.type &&
+    (formData.type === 'national' || doc.region_id === formData.region_id)
+  );
 
   if (loading) {
     return (
@@ -181,7 +254,7 @@ export default function DocumentsPage() {
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Year */}
             <div>
               <label className="block text-sm font-medium text-[#003049] dark:text-gray-300 mb-2">
@@ -205,11 +278,45 @@ export default function DocumentsPage() {
               </label>
               <select
                 value={formData.type}
-                onChange={(e) => setFormData({ ...formData, type: e.target.value as 'national' | 'regional', region_id: '' })}
+                onChange={(e) => setFormData({ ...formData, type: e.target.value as 'national' | 'regional', region_id: '', supersedes_document_id: '' })}
                 className="w-full px-4 py-2 rounded-lg border border-[#003049]/30 dark:border-slate-600 bg-white dark:bg-slate-800 text-[#003049] dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#669bbc]"
               >
                 <option value="national">Nasional (SKB)</option>
                 <option value="regional">Regional (Pergub/SE Daerah)</option>
+              </select>
+            </div>
+
+            {/* Document Kind */}
+            <div>
+              <label className="block text-sm font-medium text-[#003049] dark:text-gray-300 mb-2">
+                Sifat Dokumen <span className="text-[#c1121f]">*</span>
+              </label>
+              <select
+                value={formData.document_kind}
+                onChange={(e) => setFormData({ ...formData, document_kind: e.target.value as DocumentKind })}
+                className="w-full px-4 py-2 rounded-lg border border-[#003049]/30 dark:border-slate-600 bg-white dark:bg-slate-800 text-[#003049] dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#669bbc]"
+              >
+                <option value="original">Dokumen utama</option>
+                <option value="revision">Revisi</option>
+                <option value="addendum">Tambahan</option>
+                <option value="cancellation">Pembatalan</option>
+              </select>
+            </div>
+
+            {/* Status */}
+            <div>
+              <label className="block text-sm font-medium text-[#003049] dark:text-gray-300 mb-2">
+                Status <span className="text-[#c1121f]">*</span>
+              </label>
+              <select
+                value={formData.status}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value as DocumentStatus })}
+                className="w-full px-4 py-2 rounded-lg border border-[#003049]/30 dark:border-slate-600 bg-white dark:bg-slate-800 text-[#003049] dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#669bbc]"
+              >
+                <option value="draft">Draft</option>
+                <option value="published">Dipublikasikan</option>
+                <option value="archived">Diarsipkan</option>
+                <option value="superseded">Digantikan</option>
               </select>
             </div>
 
@@ -221,7 +328,7 @@ export default function DocumentsPage() {
                 </label>
                 <select
                   value={formData.region_id}
-                  onChange={(e) => setFormData({ ...formData, region_id: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, region_id: e.target.value, supersedes_document_id: '' })}
                   className="w-full px-4 py-2 rounded-lg border border-[#003049]/30 dark:border-slate-600 bg-white dark:bg-slate-800 text-[#003049] dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#669bbc]"
                 >
                   <option value="">Pilih Wilayah</option>
@@ -233,6 +340,54 @@ export default function DocumentsPage() {
                 </select>
               </div>
             )}
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Published Date */}
+            <div>
+              <label className="block text-sm font-medium text-[#003049] dark:text-gray-300 mb-2">
+                Tanggal Terbit
+              </label>
+              <input
+                type="date"
+                value={formData.published_date}
+                onChange={(e) => setFormData({ ...formData, published_date: e.target.value })}
+                className="w-full px-4 py-2 rounded-lg border border-[#003049]/30 dark:border-slate-600 bg-white dark:bg-slate-800 text-[#003049] dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#669bbc]"
+              />
+            </div>
+
+            {/* Supersedes */}
+            <div>
+              <label className="block text-sm font-medium text-[#003049] dark:text-gray-300 mb-2">
+                Merevisi / Menambah Dokumen
+              </label>
+              <select
+                value={formData.supersedes_document_id}
+                onChange={(e) => setFormData({ ...formData, supersedes_document_id: e.target.value })}
+                className="w-full px-4 py-2 rounded-lg border border-[#003049]/30 dark:border-slate-600 bg-white dark:bg-slate-800 text-[#003049] dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#669bbc]"
+              >
+                <option value="">Tidak ada</option>
+                {supersedesOptions.map((doc) => (
+                  <option key={doc.id} value={doc.id}>
+                    {doc.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Summary */}
+          <div>
+            <label className="block text-sm font-medium text-[#003049] dark:text-gray-300 mb-2">
+              Ringkasan Dampak
+            </label>
+            <textarea
+              value={formData.summary}
+              onChange={(e) => setFormData({ ...formData, summary: e.target.value })}
+              rows={3}
+              placeholder="Contoh: Menambahkan cuti bersama pada 18 Mei 2026"
+              className="w-full px-4 py-2 rounded-lg border border-[#003049]/30 dark:border-slate-600 bg-white dark:bg-slate-800 text-[#003049] dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#669bbc] resize-none"
+            />
           </div>
 
           {/* File Upload */}
@@ -271,7 +426,7 @@ export default function DocumentsPage() {
               onClick={() => {
                 setShowUploadForm(false);
                 setSelectedFile(null);
-                setFormData({ title: '', year: new Date().getFullYear(), type: 'national', region_id: '' });
+                setFormData(getInitialFormData());
               }}
               className="px-4 py-2 rounded-lg border border-[#003049]/30 dark:border-slate-600 text-[#003049] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 transition"
             >
@@ -334,9 +489,21 @@ export default function DocumentsPage() {
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       <FileText className="text-[#c1121f]" size={20} />
-                      <p className="font-medium text-[#003049] dark:text-gray-100">
-                        {doc.title}
-                      </p>
+                      <div>
+                        <p className="font-medium text-[#003049] dark:text-gray-100">
+                          {doc.title}
+                        </p>
+                        <div className="flex flex-wrap items-center gap-2 mt-1 text-xs text-[#003049]/60 dark:text-gray-400">
+                          <span>{documentKindLabels[doc.document_kind]}</span>
+                          {doc.published_date && <span>Terbit {doc.published_date}</span>}
+                          {doc.supersedes_document && <span>Merevisi: {doc.supersedes_document.title}</span>}
+                        </div>
+                        {doc.summary && (
+                          <p className="text-xs text-[#003049]/60 dark:text-gray-400 mt-1 max-w-md">
+                            {doc.summary}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </td>
                   <td className="px-4 py-3">
@@ -358,26 +525,34 @@ export default function DocumentsPage() {
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    {doc.is_active ? (
+                    {doc.status === 'published' && doc.is_active ? (
                       <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
                         <CheckCircle size={12} />
-                        Aktif
+                        Dipublikasikan
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
-                        Tidak Aktif
+                        {statusLabels[doc.status]}
                       </span>
                     )}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-2">
-                      {!doc.is_active && (
+                      {doc.status !== 'published' || !doc.is_active ? (
                         <button
-                          onClick={() => handleSetActive(doc.id)}
+                          onClick={() => handlePublish(doc.id)}
                           className="p-2 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 text-green-600 dark:text-green-400 transition"
-                          title="Jadikan Aktif"
+                          title="Publikasikan"
                         >
                           <CheckCircle size={18} />
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleArchive(doc.id)}
+                          className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-600 dark:text-gray-400 transition"
+                          title="Arsipkan"
+                        >
+                          <Archive size={18} />
                         </button>
                       )}
                       {doc.file_url && (
@@ -413,7 +588,8 @@ export default function DocumentsPage() {
         <ul className="list-disc list-inside space-y-1 text-[#003049]/70 dark:text-gray-400">
           <li><strong>Nasional:</strong> SKB 3 Menteri untuk hari libur nasional</li>
           <li><strong>Regional:</strong> Surat Edaran/Pergub untuk libur daerah (misal Papua Barat Daya)</li>
-          <li>Dokumen aktif akan ditampilkan di halaman publik</li>
+          <li>Dokumen berstatus dipublikasikan akan tampil sebagai rantai sumber di halaman publik</li>
+          <li>Gunakan sifat dokumen Revisi/Tambahan agar perubahan resmi tidak menimpa riwayat lama</li>
         </ul>
       </div>
 

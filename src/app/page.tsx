@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Copyright, Info } from 'lucide-react';
 import Link from 'next/link';
 import { Header } from '@/components/header';
@@ -12,23 +12,18 @@ import { TimezoneInfo } from '@/components/timezone-info';
 import DocumentReference from '@/components/document-reference';
 import { getHolidays } from '@/lib/supabase-queries';
 import { Holiday } from '@/lib/date-utils';
+import { useMounted } from '@/lib/use-mounted';
 
 export default function Home() {
   const [holidays, setHolidays] = useState<Holiday[]>([]);
-  const [mounted, setMounted] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const mounted = useMounted();
   const [calendarViewMode, setCalendarViewMode] = useState<'month' | 'year'>('month');
   const [calendarFocusDate, setCalendarFocusDate] = useState(new Date());
   const [showWFHFriday, setShowWFHFriday] = useState(false);
   const [includeFridayInLongWeekend, setIncludeFridayInLongWeekend] = useState(false);
   const currentYear = new Date().getFullYear();
 
-  useEffect(() => {
-    setMounted(true);
-    loadHolidays();
-  }, []);
-
-  const loadHolidays = async () => {
+  const loadHolidays = useCallback(async () => {
     try {
       const data = await getHolidays(currentYear);
       // Transform Supabase data to Holiday format
@@ -39,15 +34,29 @@ export default function Home() {
         type: h.type as 'national' | 'regional',
         region: h.region?.code || undefined,
         isCutiBersama: h.is_cuti_bersama,
+        sourceDocuments: h.holiday_documents
+          ?.map(link => link.document)
+          .filter((document): document is NonNullable<typeof document> => Boolean(document))
+          .map(document => ({
+            id: document.id,
+            title: document.title,
+            fileUrl: document.file_url,
+            type: document.type,
+            documentKind: document.document_kind,
+          })),
       }));
       setHolidays(parsedHolidays);
     } catch (error) {
       console.error('Error loading holidays:', error);
       setHolidays([]);
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [currentYear]);
+
+  useEffect(() => {
+    // Data is loaded client-side because the Supabase browser client owns this request.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadHolidays();
+  }, [loadHolidays]);
 
   if (!mounted) {
     return null;
@@ -70,7 +79,6 @@ export default function Home() {
               showWFHFriday={showWFHFriday}
               onShowWFHFridayChange={setShowWFHFriday}
             />
-            <DocumentReference year={currentYear} />
             <LongWeekendList
               holidays={holidays}
               viewMode={calendarViewMode}
@@ -78,6 +86,7 @@ export default function Home() {
               includeFridayInLongWeekend={includeFridayInLongWeekend}
               onIncludeFridayInLongWeekendChange={setIncludeFridayInLongWeekend}
             />
+            <DocumentReference year={currentYear} />
           </div>
 
           {/* Right Column */}

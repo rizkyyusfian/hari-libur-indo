@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { getHolidayById, updateHoliday, getRegions, Region } from '@/lib/supabase-queries';
+import { Document, getDocuments, getHolidayById, updateHoliday, getRegions, Region } from '@/lib/supabase-queries';
 import { useToast } from '@/components/ui/toast';
 
 export default function EditHolidayPage() {
@@ -16,6 +16,7 @@ export default function EditHolidayPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [regions, setRegions] = useState<Region[]>([]);
+  const [documents, setDocuments] = useState<Document[]>([]);
   const [formData, setFormData] = useState({
     date: '',
     name: '',
@@ -23,17 +24,15 @@ export default function EditHolidayPage() {
     region_id: '',
     description: '',
     is_cuti_bersama: false,
+    document_ids: [] as string[],
   });
 
-  useEffect(() => {
-    loadData();
-  }, [holidayId]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
-      const [holiday, regionsData] = await Promise.all([
+      const [holiday, regionsData, documentsData] = await Promise.all([
         getHolidayById(holidayId),
         getRegions(),
+        getDocuments(),
       ]);
 
       if (!holiday) {
@@ -43,6 +42,7 @@ export default function EditHolidayPage() {
       }
 
       setRegions(regionsData);
+      setDocuments(documentsData.filter(doc => doc.status === 'published' && doc.is_active));
       setFormData({
         date: holiday.date,
         name: holiday.name,
@@ -50,6 +50,7 @@ export default function EditHolidayPage() {
         region_id: holiday.region_id || '',
         description: holiday.description || '',
         is_cuti_bersama: holiday.is_cuti_bersama,
+        document_ids: holiday.holiday_documents?.map(link => link.document_id) || [],
       });
     } catch (error) {
       console.error('Error loading holiday:', error);
@@ -58,6 +59,29 @@ export default function EditHolidayPage() {
     } finally {
       setLoading(false);
     }
+  }, [holidayId, router, showToast]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  const selectedYear = formData.date ? new Date(formData.date).getFullYear() : new Date().getFullYear();
+  const sourceDocuments = useMemo(() => {
+    return documents.filter((document) => {
+      const matchesYear = document.year === selectedYear;
+      const matchesType = document.type === formData.type;
+      const matchesRegion = formData.type === 'national' || document.region_id === formData.region_id;
+      return matchesYear && matchesType && matchesRegion;
+    });
+  }, [documents, formData.region_id, formData.type, selectedYear]);
+
+  const toggleDocument = (documentId: string) => {
+    setFormData((current) => ({
+      ...current,
+      document_ids: current.document_ids.includes(documentId)
+        ? current.document_ids.filter(id => id !== documentId)
+        : [...current.document_ids, documentId],
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -72,6 +96,7 @@ export default function EditHolidayPage() {
         region_id: formData.type === 'regional' && formData.region_id ? formData.region_id : undefined,
         description: formData.description || undefined,
         is_cuti_bersama: formData.is_cuti_bersama,
+        document_ids: formData.document_ids,
       });
       showToast('Hari libur berhasil diperbarui', 'success');
       router.push('/admin/holidays');
@@ -157,7 +182,7 @@ export default function EditHolidayPage() {
                 name="type"
                 value="national"
                 checked={formData.type === 'national'}
-                onChange={() => setFormData({ ...formData, type: 'national', region_id: '' })}
+                onChange={() => setFormData({ ...formData, type: 'national', region_id: '', document_ids: [] })}
                 className="w-4 h-4 text-[#003049] focus:ring-[#669bbc]"
               />
               <span className="text-[#003049] dark:text-gray-100">Nasional</span>
@@ -168,7 +193,7 @@ export default function EditHolidayPage() {
                 name="type"
                 value="regional"
                 checked={formData.type === 'regional'}
-                onChange={() => setFormData({ ...formData, type: 'regional' })}
+                onChange={() => setFormData({ ...formData, type: 'regional', document_ids: [] })}
                 className="w-4 h-4 text-[#003049] focus:ring-[#669bbc]"
               />
               <span className="text-[#003049] dark:text-gray-100">Regional</span>
@@ -185,7 +210,7 @@ export default function EditHolidayPage() {
             <select
               required
               value={formData.region_id}
-              onChange={(e) => setFormData({ ...formData, region_id: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, region_id: e.target.value, document_ids: [] })}
               className="w-full px-4 py-2 rounded-lg border border-[#003049]/30 dark:border-slate-600 bg-white dark:bg-slate-800 text-[#003049] dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#669bbc]"
             >
               <option value="">Pilih Wilayah</option>
@@ -227,6 +252,42 @@ export default function EditHolidayPage() {
           </label>
           <p className="text-xs text-[#003049]/60 dark:text-gray-400 mt-1 ml-8">
             Tandai jika ini adalah cuti bersama yang ditetapkan pemerintah
+          </p>
+        </div>
+
+        {/* Source Documents */}
+        <div>
+          <label className="block text-sm font-medium text-[#003049] dark:text-gray-300 mb-2">
+            Dokumen Sumber
+          </label>
+          {sourceDocuments.length > 0 ? (
+            <div className="space-y-2 rounded-lg border border-[#003049]/20 dark:border-slate-700 p-3">
+              {sourceDocuments.map((document) => (
+                <label key={document.id} className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.document_ids.includes(document.id)}
+                    onChange={() => toggleDocument(document.id)}
+                    className="mt-1 w-4 h-4 rounded border-[#003049]/30 text-[#003049] focus:ring-[#669bbc]"
+                  />
+                  <span>
+                    <span className="block text-sm font-medium text-[#003049] dark:text-gray-100">
+                      {document.title}
+                    </span>
+                    <span className="block text-xs text-[#003049]/60 dark:text-gray-400">
+                      {document.document_kind} {document.published_date ? `• ${document.published_date}` : ''}
+                    </span>
+                  </span>
+                </label>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-[#003049]/60 dark:text-gray-400 rounded-lg border border-dashed border-[#003049]/20 dark:border-slate-700 p-3">
+              Belum ada dokumen publik yang cocok untuk tahun, tipe, dan wilayah ini.
+            </p>
+          )}
+          <p className="text-xs text-[#003049]/60 dark:text-gray-400 mt-1">
+            Pilih dokumen yang menjadi dasar tanggal libur ini, termasuk revisi atau tambahan.
           </p>
         </div>
 

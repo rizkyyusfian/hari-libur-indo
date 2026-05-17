@@ -49,8 +49,10 @@ Open [http://localhost:3000](http://localhost:3000) 🎉
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_anon_key
-SUPABASE_BUCKET=your_bucket_name
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_publishable_key
+# Optional fallback (legacy naming):
+# NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+NEXT_PUBLIC_SUPABASE_BUCKET=your_bucket_name
 ```
 
 ## 🛠️ Tech Stack
@@ -77,7 +79,8 @@ src/
 │   ├── calendar.tsx      # Calendar component
 │   ├── summary-card.tsx  # Today's status
 │   ├── long-weekend-list.tsx
-│   ├── cuti-planner.tsx
+│   ├── export-controls.tsx
+│   ├── document-reference.tsx
 │   └── ui/               # Reusable UI components
 ├── lib/
 │   ├── supabase.ts       # Supabase client
@@ -93,7 +96,8 @@ Run the SQL in `supabase-schema.sql` to create tables:
 
 - `regions` — Regional data (Papua Barat Daya)
 - `holidays` — Holiday entries (national & regional)
-- `documents` — Surat Edaran PDFs
+- `documents` — Surat Edaran PDFs, including original documents, revisions, addendums, and cancellations
+- `holiday_documents` — Links specific holidays to the document(s) that support them
 
 <details>
 <summary>Quick Schema Overview</summary>
@@ -124,7 +128,20 @@ create table documents (
   year integer not null,
   type text check (type in ('national', 'regional')),
   region_id uuid references regions(id),
+  document_kind text check (document_kind in ('original', 'revision', 'addendum', 'cancellation')),
+  status text check (status in ('draft', 'published', 'archived', 'superseded')),
+  published_date date,
+  summary text,
+  supersedes_document_id uuid references documents(id),
   is_active boolean default true
+);
+
+-- Holiday source links
+create table holiday_documents (
+  holiday_id uuid references holidays(id),
+  document_id uuid references documents(id),
+  relation_type text check (relation_type in ('source', 'adds', 'revises', 'cancels')),
+  primary key (holiday_id, document_id)
 );
 ```
 
@@ -137,6 +154,7 @@ Access admin panel at `/admin/login`
 Features:
 - 📝 CRUD holidays (single & batch insert)
 - 📄 Upload Surat Edaran PDF
+- 🔗 Link holidays to exact source/revision/addendum documents
 - 🏷️ Assign regional holidays
 - 📊 Dashboard overview
 
@@ -168,4 +186,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
   <br>
   <sub>© 2026 MRYY</sub>
 </p>
-

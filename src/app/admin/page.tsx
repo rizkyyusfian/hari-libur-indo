@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Calendar, FileText, TrendingUp, Plus, Loader2, Info } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 import { getHolidayStats, getDocuments } from '@/lib/supabase-queries';
 
@@ -11,11 +12,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const currentYear = new Date().getFullYear();
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const [holidayStats, docs] = await Promise.all([
         getHolidayStats(currentYear),
@@ -28,7 +25,11 @@ export default function AdminDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentYear]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   if (loading) {
     return (
@@ -139,7 +140,7 @@ function StatCard({
   title: string;
   value: number;
   subtitle: string;
-  icon: any;
+  icon: LucideIcon;
   color: 'blue' | 'green' | 'orange' | 'purple';
 }) {
   const colorClasses = {
@@ -176,7 +177,7 @@ function QuickActionCard({
   description,
 }: {
   href: string;
-  icon: any;
+  icon: LucideIcon;
   title: string;
   description: string;
 }) {

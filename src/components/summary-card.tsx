@@ -1,6 +1,6 @@
 'use client';
 
-import { Holiday, getNextOffPeriod } from '@/lib/date-utils';
+import { Holiday, LongWeekend, getNextOffPeriod } from '@/lib/date-utils';
 import { CalendarDays, Clock } from 'lucide-react';
 
 interface SummaryCardProps {
@@ -11,6 +11,7 @@ export function SummaryCard({ holidays }: SummaryCardProps) {
   const today = new Date();
   const todayHoliday = holidays.find(h => h.date.toDateString() === today.toDateString());
   const nextOffPeriod = getNextOffPeriod(today, holidays);
+  const nextOffDetails = nextOffPeriod?.details;
   const isWeekend = today.getDay() === 0 || today.getDay() === 6;
 
   // Count remaining holidays this year
@@ -68,8 +69,8 @@ export function SummaryCard({ holidays }: SummaryCardProps) {
             <>
               <p className="font-semibold text-[#003049] dark:text-white mt-1 text-sm leading-tight">
                 {nextOffPeriod.type === 'long-weekend'
-                  ? `${(nextOffPeriod.details as any).length} hari`
-                  : (nextOffPeriod.details as Holiday).name}
+                  ? `${(nextOffDetails as LongWeekend).length} hari`
+                  : (nextOffDetails as Holiday).name}
               </p>
               <div className="flex items-center gap-1 mt-1 text-xs text-[#003049]/60 dark:text-gray-400">
                 <Clock size={12} />

@@ -3,15 +3,14 @@
 import { Clock } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { getCurrentTimezone, formatTimeWithTimezone } from '@/lib/timezone';
+import { useMounted } from '@/lib/use-mounted';
 
 export function TimezoneInfo() {
   const [time, setTime] = useState<string>('');
   const [timezone, setTimezone] = useState<string>('');
-  const [mounted, setMounted] = useState(false);
+  const mounted = useMounted();
 
   useEffect(() => {
-    setMounted(true);
-
     const updateTime = () => {
       const now = new Date();
       const tz = getCurrentTimezone();

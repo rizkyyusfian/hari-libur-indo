@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Plus, Edit, Trash2, Search, Loader2, Check, Upload, X, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { getHolidays, deleteHoliday, Holiday, createHoliday, getRegions, Region } from '@/lib/supabase-queries';
@@ -15,6 +15,10 @@ interface BatchHolidayInput {
   description?: string;
   is_cuti_bersama?: boolean;
 }
+
+const isRecord = (value: unknown): value is Record<string, unknown> => {
+  return typeof value === 'object' && value !== null;
+};
 
 export default function HolidaysPage() {
   const [holidays, setHolidays] = useState<Holiday[]>([]);
@@ -32,12 +36,7 @@ export default function HolidaysPage() {
   const [batchInserting, setBatchInserting] = useState(false);
   const { showToast } = useToast();
 
-  useEffect(() => {
-    loadHolidays();
-    loadRegions();
-  }, [yearFilter]);
-
-  const loadHolidays = async () => {
+  const loadHolidays = useCallback(async () => {
     setLoading(true);
     try {
       const data = await getHolidays(yearFilter);
@@ -48,16 +47,21 @@ export default function HolidaysPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [showToast, yearFilter]);
 
-  const loadRegions = async () => {
+  const loadRegions = useCallback(async () => {
     try {
       const data = await getRegions();
       setRegions(data);
     } catch (error) {
       console.error('Error loading regions:', error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadHolidays();
+    loadRegions();
+  }, [loadHolidays, loadRegions]);
 
   const handleDelete = async () => {
     if (!deleteId) return;
@@ -82,10 +86,10 @@ export default function HolidaysPage() {
       return { valid: false, errors: ['JSON tidak boleh kosong'] };
     }
 
-    let parsed: any[];
+    let parsed: unknown;
     try {
       parsed = JSON.parse(json);
-    } catch (e) {
+    } catch {
       return { valid: false, errors: ['Format JSON tidak valid'] };
     }
 
@@ -97,24 +101,31 @@ export default function HolidaysPage() {
     
     parsed.forEach((item, index) => {
       const itemErrors: string[] = [];
+      const itemRecord = isRecord(item) ? item : {};
+      const date = itemRecord.date;
+      const name = itemRecord.name;
+      const type = itemRecord.type;
+      const regionId = itemRecord.region_id;
+      const description = itemRecord.description;
+      const isCutiBersama = itemRecord.is_cuti_bersama;
       
       // Validate date
-      if (!item.date || !/^\d{4}-\d{2}-\d{2}$/.test(item.date)) {
+      if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
         itemErrors.push('Format tanggal harus YYYY-MM-DD');
       }
       
       // Validate name
-      if (!item.name || typeof item.name !== 'string' || item.name.trim() === '') {
+      if (typeof name !== 'string' || name.trim() === '') {
         itemErrors.push('Nama tidak boleh kosong');
       }
       
       // Validate type
-      if (!item.type || !['national', 'regional'].includes(item.type)) {
+      if (type !== 'national' && type !== 'regional') {
         itemErrors.push('Tipe harus "national" atau "regional"');
       }
       
       // Validate region_id for regional type
-      if (item.type === 'regional' && !item.region_id) {
+      if (type === 'regional' && typeof regionId !== 'string') {
         itemErrors.push('region_id diperlukan untuk tipe regional');
       }
       
@@ -122,12 +133,12 @@ export default function HolidaysPage() {
         errors.push(`Baris ${index + 1}: ${itemErrors.join(', ')}`);
       } else {
         validData.push({
-          date: item.date,
-          name: item.name.trim(),
-          type: item.type,
-          region_id: item.region_id,
-          description: item.description,
-          is_cuti_bersama: item.is_cuti_bersama || false,
+          date: date as string,
+          name: (name as string).trim(),
+          type: type as 'national' | 'regional',
+          region_id: typeof regionId === 'string' ? regionId : undefined,
+          description: typeof description === 'string' ? description : undefined,
+          is_cuti_bersama: typeof isCutiBersama === 'boolean' ? isCutiBersama : false,
         });
       }
     });
@@ -290,7 +301,7 @@ export default function HolidaysPage() {
               <ul className="text-[#003049]/70 dark:text-gray-400 space-y-1 list-disc list-inside">
                 <li><code className="bg-gray-200 dark:bg-slate-700 px-1 rounded">date</code> (wajib): YYYY-MM-DD</li>
                 <li><code className="bg-gray-200 dark:bg-slate-700 px-1 rounded">name</code> (wajib): Nama hari libur</li>
-                <li><code className="bg-gray-200 dark:bg-slate-700 px-1 rounded">type</code> (wajib): "national" atau "regional"</li>
+                <li><code className="bg-gray-200 dark:bg-slate-700 px-1 rounded">type</code> (wajib): &quot;national&quot; atau &quot;regional&quot;</li>
                 <li><code className="bg-gray-200 dark:bg-slate-700 px-1 rounded">region_id</code> (untuk regional): UUID wilayah</li>
                 <li><code className="bg-gray-200 dark:bg-slate-700 px-1 rounded">description</code> (opsional): Keterangan</li>
                 <li><code className="bg-gray-200 dark:bg-slate-700 px-1 rounded">is_cuti_bersama</code> (opsional): true/false</li>
@@ -459,6 +470,9 @@ export default function HolidaysPage() {
                   <th className="px-4 py-3 text-left text-sm font-semibold text-[#003049] dark:text-gray-300">
                     Cuti Bersama
                   </th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-[#003049] dark:text-gray-300">
+                    Sumber
+                  </th>
                   <th className="px-4 py-3 text-right text-sm font-semibold text-[#003049] dark:text-gray-300">
                     Aksi
                   </th>
@@ -485,6 +499,25 @@ export default function HolidaysPage() {
                     <td className="px-4 py-3 text-sm text-[#003049]/70 dark:text-gray-400">
                       {holiday.is_cuti_bersama ? (
                         <Check size={18} className="text-green-600 dark:text-green-400" />
+                      ) : '—'}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-[#003049]/70 dark:text-gray-400">
+                      {holiday.holiday_documents && holiday.holiday_documents.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {holiday.holiday_documents.map((link) => (
+                            <span
+                              key={link.document_id}
+                              className="inline-flex px-2 py-1 text-xs rounded-full bg-[#669bbc]/15 text-[#003049] dark:text-[#669bbc]"
+                              title={link.document?.title}
+                            >
+                              {link.document?.document_kind === 'addendum'
+                                ? 'Tambahan'
+                                : link.document?.document_kind === 'revision'
+                                  ? 'Revisi'
+                                  : 'Sumber'}
+                            </span>
+                          ))}
+                        </div>
                       ) : '—'}
                     </td>
                     <td className="px-4 py-3 text-right">

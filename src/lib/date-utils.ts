@@ -1,4 +1,4 @@
-import { format, isWeekend as dfIsWeekend, isSameDay, addDays, isAfter, isBefore, startOfDay, isWithinInterval } from 'date-fns';
+import { format, isWeekend as dfIsWeekend, isSameDay, isAfter, isBefore, startOfDay } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
 
 export type Holiday = {
@@ -9,6 +9,15 @@ export type Holiday = {
   region?: string;
   description?: string;
   isCutiBersama?: boolean;
+  sourceDocuments?: HolidaySourceDocument[];
+};
+
+export type HolidaySourceDocument = {
+  id: string;
+  title: string;
+  fileUrl: string;
+  type: 'national' | 'regional';
+  documentKind?: 'original' | 'revision' | 'addendum' | 'cancellation';
 };
 
 export type LongWeekend = {
