@@ -4,22 +4,26 @@ import { useCallback, useEffect, useState } from 'react';
 import { Calendar, FileText, TrendingUp, Plus, Loader2, Info } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import Link from 'next/link';
-import { getHolidayStats, getDocuments } from '@/lib/supabase-queries';
+import { getHolidayStats, getDocuments } from '@/lib/data-client';
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({ total: 0, national: 0, regional: 0, cutiBersama: 0 });
   const [documentCount, setDocumentCount] = useState(0);
+  const [loadWarning, setLoadWarning] = useState(false);
   const [loading, setLoading] = useState(true);
   const currentYear = new Date().getFullYear();
 
   const loadData = useCallback(async () => {
     try {
-      const [holidayStats, docs] = await Promise.all([
+      const [holidayResult, documentResult] = await Promise.allSettled([
         getHolidayStats(currentYear),
         getDocuments(),
       ]);
-      setStats(holidayStats);
-      setDocumentCount(docs.length);
+      if (holidayResult.status === 'fulfilled') setStats(holidayResult.value);
+      if (documentResult.status === 'fulfilled') setDocumentCount(documentResult.value.length);
+      setLoadWarning(
+        holidayResult.status === 'rejected' || documentResult.status === 'rejected',
+      );
     } catch (error) {
       console.error('Error loading dashboard data:', error);
     } finally {
@@ -52,6 +56,11 @@ export default function AdminDashboard() {
       </div>
 
       {/* Stats Grid */}
+      {loadWarning && (
+        <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-300">
+          Sebagian ringkasan tidak tersedia. Nilai yang berhasil dimuat tetap ditampilkan.
+        </div>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Total Hari Libur"

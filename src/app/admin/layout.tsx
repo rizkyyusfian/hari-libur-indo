@@ -1,24 +1,20 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
-import { getUser, signOut, onAuthStateChange } from '@/lib/auth';
-import { Home, Calendar, FileText, LogOut, Menu, X, Moon, Sun, Shield, Loader2, Copyright, ExternalLink } from 'lucide-react';
-import type { User } from '@supabase/supabase-js';
+import { Home, Calendar, FileText, LogOut, Menu, X, Moon, Sun, Shield, Copyright, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { ToastProvider } from '@/components/ui/toast';
 import { useMounted } from '@/lib/use-mounted';
+import { logoutAction } from './login/actions';
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const router = useRouter();
   const pathname = usePathname();
   const { setTheme, resolvedTheme } = useTheme();
   const mounted = useMounted();
@@ -26,43 +22,8 @@ export default function AdminLayout({
   // Skip auth check for login page
   const isLoginPage = pathname === '/admin/login';
 
-  const checkUser = useCallback(async () => {
-    try {
-      const currentUser = await getUser();
-      if (!currentUser) {
-        router.push('/admin/login');
-        return;
-      }
-      setUser(currentUser);
-    } catch {
-      router.push('/admin/login');
-    } finally {
-      setLoading(false);
-    }
-  }, [router]);
-
-  useEffect(() => {
-    if (isLoginPage) {
-      setLoading(false);
-      return;
-    }
-
-    checkUser();
-
-    const { data: { subscription } } = onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT') {
-        router.push('/admin/login');
-      } else if (session?.user) {
-        setUser(session.user);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [router, isLoginPage, checkUser]);
-
   const handleSignOut = async () => {
-    await signOut();
-    router.push('/admin/login');
+    await logoutAction();
   };
 
   const toggleDarkMode = () => {
@@ -74,21 +35,6 @@ export default function AdminLayout({
   // For login page, just render children without layout
   if (isLoginPage) {
     return <ToastProvider>{children}</ToastProvider>;
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-white dark:bg-slate-950 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="animate-spin text-[#003049] dark:text-[#669bbc] mx-auto mb-4" size={32} />
-          <p className="text-[#003049] dark:text-gray-400">Memuat...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return null;
   }
 
   const navItems = [
@@ -227,9 +173,6 @@ export default function AdminLayout({
                     )}
                   </button>
                 )}
-                <div className="hidden sm:block text-sm text-[#003049]/70 dark:text-gray-400 px-2">
-                  {user.email}
-                </div>
                 <button
                   onClick={handleSignOut}
                   className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[#c1121f]/10 text-[#c1121f] transition"

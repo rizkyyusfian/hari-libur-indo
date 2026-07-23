@@ -10,7 +10,7 @@ import { LongWeekendList } from '@/components/long-weekend-list';
 import { ExportControls } from '@/components/export-controls';
 import { TimezoneInfo } from '@/components/timezone-info';
 import DocumentReference from '@/components/document-reference';
-import { getHolidays } from '@/lib/supabase-queries';
+import { getHolidays } from '@/lib/data-client';
 import { Holiday } from '@/lib/date-utils';
 import { useMounted } from '@/lib/use-mounted';
 
@@ -21,12 +21,12 @@ export default function Home() {
   const [calendarFocusDate, setCalendarFocusDate] = useState(new Date());
   const [showWFHFriday, setShowWFHFriday] = useState(false);
   const [includeFridayInLongWeekend, setIncludeFridayInLongWeekend] = useState(false);
-  const currentYear = new Date().getFullYear();
+  const currentYear = calendarFocusDate.getFullYear();
 
   const loadHolidays = useCallback(async () => {
     try {
       const data = await getHolidays(currentYear);
-      // Transform Supabase data to Holiday format
+      // Transform API data to the calendar domain format.
       const parsedHolidays: Holiday[] = data.map(h => ({
         id: h.id,
         date: new Date(h.date),
@@ -36,11 +36,14 @@ export default function Home() {
         isCutiBersama: h.is_cuti_bersama,
         sourceDocuments: h.holiday_documents
           ?.map(link => link.document)
-          .filter((document): document is NonNullable<typeof document> => Boolean(document))
+          .filter(
+            (document): document is NonNullable<typeof document> =>
+              Boolean(document?.file_url),
+          )
           .map(document => ({
             id: document.id,
             title: document.title,
-            fileUrl: document.file_url,
+            fileUrl: document.file_url!,
             type: document.type,
             documentKind: document.document_kind,
           })),
@@ -53,7 +56,7 @@ export default function Home() {
   }, [currentYear]);
 
   useEffect(() => {
-    // Data is loaded client-side because the Supabase browser client owns this request.
+    // Year navigation loads through the read-only application API.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     loadHolidays();
   }, [loadHolidays]);

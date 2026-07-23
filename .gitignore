@@ -12,6 +12,9 @@
 
 # testing
 /coverage
+/test-results
+/playwright-report
+/blob-report
 
 # next.js
 /.next/
@@ -30,22 +33,25 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env.local
+# environment files
+.env*
+!.env.example
 
 # vercel
 .vercel
+
+# Neon CLI local project context
+.neon
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
 
-#ai agents
-/docs
+# editors
+.idea/
+*.swp
+
+# AI agent working files
+/docs/superpowers/
 /.docs
 /.superpowers
-
-# sql
-supabase-seed-2026.sql
-
-

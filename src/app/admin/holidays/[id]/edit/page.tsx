@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { Document, getDocuments, getHolidayById, updateHoliday, getRegions, Region } from '@/lib/supabase-queries';
+import { Document, getDocuments, getHolidayById, updateHoliday, getRegions, Region } from '@/lib/data-client';
 import { useToast } from '@/components/ui/toast';
 
 export default function EditHolidayPage() {
@@ -25,6 +25,7 @@ export default function EditHolidayPage() {
     description: '',
     is_cuti_bersama: false,
     document_ids: [] as string[],
+    updated_at: '',
   });
 
   const loadData = useCallback(async () => {
@@ -51,6 +52,7 @@ export default function EditHolidayPage() {
         description: holiday.description || '',
         is_cuti_bersama: holiday.is_cuti_bersama,
         document_ids: holiday.holiday_documents?.map(link => link.document_id) || [],
+        updated_at: holiday.updated_at,
       });
     } catch (error) {
       console.error('Error loading holiday:', error);
@@ -97,6 +99,7 @@ export default function EditHolidayPage() {
         description: formData.description || undefined,
         is_cuti_bersama: formData.is_cuti_bersama,
         document_ids: formData.document_ids,
+        updated_at: formData.updated_at,
       });
       showToast('Hari libur berhasil diperbarui', 'success');
       router.push('/admin/holidays');

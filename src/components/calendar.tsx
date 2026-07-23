@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Holiday, isHoliday, isWeekend, formatDateIndonesian, formatDateISO } from '@/lib/date-utils';
 import { ChevronLeft, ChevronRight, CalendarDays, Calendar as CalendarIcon, ExternalLink } from 'lucide-react';
-import { getRegionalDocument, Document } from '@/lib/supabase-queries';
 
 interface CalendarProps {
   holidays: Holiday[];
@@ -26,27 +25,6 @@ export function Calendar({
 }: CalendarProps) {
   const [hoveredDate, setHoveredDate] = useState<Date | null>(null);
   const [popoverPosition, setPopoverPosition] = useState({ x: 0, y: 0 });
-  const [regionalDoc, setRegionalDoc] = useState<Document | null>(null);
-
-  useEffect(() => {
-    loadRegionalDoc();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [focusDate.getFullYear()]);
-
-  const loadRegionalDoc = async () => {
-    try {
-      const doc = await getRegionalDocument(focusDate.getFullYear(), 'papua_barat_daya');
-      if (!doc) {
-        console.warn('[Calendar] Regional document not found for year:', focusDate.getFullYear());
-      } else if (!doc.file_url) {
-        console.warn('[Calendar] Regional document found but file_url is missing:', doc);
-      }
-      setRegionalDoc(doc);
-    } catch (error) {
-      console.error('[Calendar] Error loading regional document:', error);
-    }
-  };
-
   const getPrimaryRegionalSource = (holiday: Holiday) =>
     holiday.sourceDocuments?.find(d => d.documentKind === 'addendum') ||
     holiday.sourceDocuments?.find(d => d.documentKind === 'revision') ||
@@ -67,8 +45,8 @@ export function Calendar({
           : source?.documentKind === 'cancellation'
             ? 'Pembatalan'
             : 'PBD';
-    const href = source?.fileUrl || regionalDoc?.file_url;
-    const title = source?.title || regionalDoc?.title || 'Dokumen PBD';
+    const href = source?.fileUrl;
+    const title = source?.title || 'Dokumen PBD';
 
     if (href) {
       return (

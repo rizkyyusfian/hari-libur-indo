@@ -12,7 +12,7 @@ export type Holiday = {
   sourceDocuments?: HolidaySourceDocument[];
 };
 
-export type HolidaySourceDocument = {
+type HolidaySourceDocument = {
   id: string;
   title: string;
   fileUrl: string;
@@ -57,22 +57,9 @@ export const isHoliday = (date: Date, holidays: Holiday[], regionFilter?: string
 };
 
 // Check if date is weekend or holiday
-export const isOffDay = (date: Date, holidays: Holiday[], regionFilter?: string, options?: OffDayOptions): boolean => {
+const isOffDay = (date: Date, holidays: Holiday[], regionFilter?: string, options?: OffDayOptions): boolean => {
   const fridayAsOffDay = options?.includeFridayAsOffDay && date.getDay() === 5;
   return dfIsWeekend(date) || fridayAsOffDay || !!isHoliday(date, holidays, regionFilter);
-};
-
-// Get all weekends in a month
-export const getWeekendsInMonth = (year: number, month: number): Date[] => {
-  const weekends = [];
-  const date = new Date(year, month - 1, 1);
-  while (date.getMonth() === month - 1) {
-    if (dfIsWeekend(date)) {
-      weekends.push(new Date(date));
-    }
-    date.setDate(date.getDate() + 1);
-  }
-  return weekends;
 };
 
 // Detect long weekends (3+ consecutive off days)
@@ -160,18 +147,4 @@ export const getNextOffPeriod = (from: Date, holidays: Holiday[], regionFilter?:
   }
 
   return null;
-};
-
-// Get days until next off day
-export const getDaysUntilNextOffDay = (from: Date, holidays: Holiday[], regionFilter?: string): number => {
-  const date = new Date(from);
-  date.setDate(date.getDate() + 1);
-
-  for (let i = 0; i < 365; i++) {
-    if (isOffDay(date, holidays, regionFilter)) {
-      return i + 1;
-    }
-    date.setDate(date.getDate() + 1);
-  }
-  return -1;
 };

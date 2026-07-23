@@ -1,4 +1,4 @@
-export type TimezoneCode = 'WIB' | 'WITA' | 'WIT' | 'UTC';
+type TimezoneCode = 'WIB' | 'WITA' | 'WIT' | 'UTC';
 
 export interface TimezoneInfo {
   code: TimezoneCode;
@@ -7,7 +7,7 @@ export interface TimezoneInfo {
   provinces: string[];
 }
 
-export const timezones: TimezoneInfo[] = [
+const timezones: TimezoneInfo[] = [
   {
     code: 'WIB',
     name: 'Western Indonesia Time',
@@ -27,21 +27,6 @@ export const timezones: TimezoneInfo[] = [
     provinces: ['Papua', 'West Papua', 'North Maluku', 'Maluku'],
   },
 ];
-
-export const getTimezoneByProvinceOrCoords = (province?: string): TimezoneInfo => {
-  if (province) {
-    const tz = timezones.find(t => t.provinces.some(p => p.toLowerCase().includes(province.toLowerCase())));
-    if (tz) return tz;
-  }
-
-  // Papua Barat Daya is in WIT
-  if (province?.toLowerCase().includes('papua')) {
-    return timezones.find(t => t.code === 'WIT') || timezones[0];
-  }
-
-  // Default to WIB
-  return timezones[0];
-};
 
 export const getCurrentTimezone = (): TimezoneInfo => {
   const now = new Date();
@@ -66,7 +51,7 @@ export const formatTimeWithTimezone = (date: Date, timezone: TimezoneInfo): stri
   return `${formatter.format(date)} ${timezone.code}`;
 };
 
-export const getTimezoneString = (offset: number): string => {
+const getTimezoneString = (offset: number): string => {
   if (offset === 7) return 'Asia/Jakarta';
   if (offset === 8) return 'Asia/Makassar';
   if (offset === 9) return 'Asia/Jayapura';

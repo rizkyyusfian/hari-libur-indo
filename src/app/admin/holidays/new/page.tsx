@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { createHoliday, Document, getDocuments, getRegions, Region } from '@/lib/supabase-queries';
+import { createHoliday, Document, getDocuments, getRegions, Region } from '@/lib/data-client';
 import { useToast } from '@/components/ui/toast';
 
 export default function NewHolidayPage() {

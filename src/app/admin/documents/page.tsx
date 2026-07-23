@@ -13,8 +13,8 @@ import {
   getRegions,
   publishDocument,
   Region,
-  uploadPDF,
-} from '@/lib/supabase-queries';
+  uploadDocumentPDF,
+} from '@/lib/data-client';
 import { useToast } from '@/components/ui/toast';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 
@@ -113,24 +113,20 @@ export default function DocumentsPage() {
 
     setUploading(true);
     try {
-      // Upload file to storage with unique timestamp
-      const timestamp = Date.now();
-      const filePath = await uploadPDF(selectedFile, `surat-edaran-${formData.type}-${formData.year}-${timestamp}.pdf`);
-
-      // Create document record
-      await createDocument({
+      const created = await createDocument({
         title: formData.title,
         year: formData.year,
-        file_path: filePath,
         type: formData.type,
         region_id: formData.type === 'regional' ? formData.region_id : undefined,
         document_kind: formData.document_kind,
-        status: formData.status,
         published_date: formData.published_date || undefined,
         supersedes_document_id: formData.supersedes_document_id || undefined,
         summary: formData.summary || undefined,
-        is_active: formData.status === 'published',
       });
+      await uploadDocumentPDF(created.id, selectedFile);
+      if (formData.status === 'published') {
+        await publishDocument(created.id);
+      }
 
       // Reset form
       setFormData(getInitialFormData());
@@ -144,8 +140,8 @@ export default function DocumentsPage() {
       console.error('Error uploading document:', error);
       const message = getErrorMessage(error);
 
-      if (message.toLowerCase().includes('bucket')) {
-        showToast('Upload gagal: bucket storage belum siap. Jalankan ulang supabase-schema.sql', 'error');
+      if (message.toLowerCase().includes('r2')) {
+        showToast('Upload gagal: konfigurasi R2 belum siap.', 'error');
       } else {
         showToast(`Gagal mengunggah dokumen: ${message}`, 'error');
       }
@@ -315,8 +311,6 @@ export default function DocumentsPage() {
               >
                 <option value="draft">Draft</option>
                 <option value="published">Dipublikasikan</option>
-                <option value="archived">Diarsipkan</option>
-                <option value="superseded">Digantikan</option>
               </select>
             </div>
 
@@ -525,7 +519,11 @@ export default function DocumentsPage() {
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    {doc.status === 'published' && doc.is_active ? (
+                    {doc.storage_status === 'missing' || doc.storage_status === 'error' ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
+                        Upload diperlukan
+                      </span>
+                    ) : doc.status === 'published' && doc.is_active ? (
                       <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
                         <CheckCircle size={12} />
                         Dipublikasikan

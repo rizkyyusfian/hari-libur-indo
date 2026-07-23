@@ -114,7 +114,7 @@ export default function AboutPage() {
                 <li>• Copilot CLI (AI-assisted dev ftw)</li>
                 <li>• Next.js 16</li>
                 <li>• Tailwind CSS v4</li>
-                <li>• Supabase</li>
+                <li>• Neon Postgres + Cloudflare R2</li>
               </ul>
               
               <div className="border-t border-[#003049]/10 dark:border-slate-700 mt-6 pt-6">

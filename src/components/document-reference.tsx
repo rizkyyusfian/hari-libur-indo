@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { FileText, ExternalLink } from 'lucide-react';
-import { getPublishedDocumentsByYear, Document, DocumentKind } from '@/lib/supabase-queries';
+import { getPublishedDocumentsByYear, Document } from '@/lib/data-client';
 
 interface DocumentReferenceProps {
   year?: number;
@@ -36,7 +36,6 @@ export default function DocumentReference({ year }: DocumentReferenceProps) {
   }
 
   const nationalDocs = documents.filter(document => document.type === 'national');
-  const regionalDocs = documents.filter(document => document.type === 'regional');
 
   return (
     <div className="p-3 bg-gray-50 dark:bg-slate-800/50 rounded-lg border border-[#003049]/10 dark:border-slate-700">
@@ -117,15 +116,4 @@ function DocumentGroup({
       </div>
     </div>
   );
-}
-
-function getDocumentKindLabel(kind: DocumentKind) {
-  const labels: Record<DocumentKind, string> = {
-    original: 'Utama',
-    revision: 'Revisi',
-    addendum: 'Tambahan',
-    cancellation: 'Pembatalan',
-  };
-
-  return labels[kind];
 }

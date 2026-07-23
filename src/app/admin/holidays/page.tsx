@@ -3,7 +3,14 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Plus, Edit, Trash2, Search, Loader2, Check, Upload, X, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
-import { getHolidays, deleteHoliday, Holiday, createHoliday, getRegions, Region } from '@/lib/supabase-queries';
+import {
+  createHolidayBatch,
+  deleteHoliday,
+  getAdminHolidays,
+  getRegions,
+  Holiday,
+  Region,
+} from '@/lib/data-client';
 import { useToast } from '@/components/ui/toast';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 
@@ -39,7 +46,7 @@ export default function HolidaysPage() {
   const loadHolidays = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await getHolidays(yearFilter);
+      const data = await getAdminHolidays(yearFilter);
       setHolidays(data);
     } catch (error) {
       console.error('Error loading holidays:', error);
@@ -164,37 +171,24 @@ export default function HolidaysPage() {
     if (batchParsed.length === 0) return;
     
     setBatchInserting(true);
-    let successCount = 0;
-    let failCount = 0;
-    
-    for (const item of batchParsed) {
-      try {
-        await createHoliday({
-          date: item.date,
-          name: item.name,
-          type: item.type,
-          region_id: item.region_id,
-          description: item.description,
+    try {
+      const result = await createHolidayBatch(
+        batchParsed.map((item) => ({
+          ...item,
           is_cuti_bersama: item.is_cuti_bersama ?? false,
-        });
-        successCount++;
-      } catch (error) {
-        console.error('Error inserting holiday:', error);
-        failCount++;
-      }
-    }
-    
-    setBatchInserting(false);
-    
-    if (successCount > 0) {
-      showToast(`${successCount} hari libur berhasil ditambahkan${failCount > 0 ? `, ${failCount} gagal` : ''}`, 'success');
+        })),
+      );
+      showToast(`${result.count} hari libur berhasil ditambahkan`, 'success');
       setShowBatchForm(false);
       setBatchJson('');
       setBatchParsed([]);
       setBatchErrors([]);
-      loadHolidays();
-    } else {
-      showToast('Gagal menambahkan data', 'error');
+      await loadHolidays();
+    } catch (error) {
+      console.error('Error inserting holiday batch:', error);
+      showToast('Batch gagal; tidak ada data yang disimpan', 'error');
+    } finally {
+      setBatchInserting(false);
     }
   };
 

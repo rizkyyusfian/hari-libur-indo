@@ -3,11 +3,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { signIn } from '@/lib/auth';
 import { LogIn, AlertCircle, Shield, Loader2 } from 'lucide-react';
+import { loginAction } from './actions';
 
 export default function AdminLogin() {
-  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -19,8 +18,13 @@ export default function AdminLogin() {
     setLoading(true);
 
     try {
-      await signIn(email, password);
+      const result = await loginAction(password);
+      if (!result.ok) {
+        setError(result.message);
+        return;
+      }
       router.push('/admin');
+      router.refresh();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Login gagal. Periksa email dan password.';
       setError(message);
@@ -54,24 +58,14 @@ export default function AdminLogin() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-[#003049] dark:text-gray-300 mb-2">
-                Email
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full px-4 py-3 rounded-lg border border-[#003049]/30 dark:border-slate-600 bg-white dark:bg-slate-800 text-[#003049] dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#669bbc]"
-                placeholder="admin@example.com"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-[#003049] dark:text-gray-300 mb-2">
+              <label
+                htmlFor="admin-password"
+                className="block text-sm font-medium text-[#003049] dark:text-gray-300 mb-2"
+              >
                 Password
               </label>
               <input
+                id="admin-password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

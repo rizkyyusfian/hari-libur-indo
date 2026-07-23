@@ -1,10 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { Holiday, detectLongWeekends, formatDateIndonesian, isHoliday, isWeekend, getDayNameIndonesian } from '@/lib/date-utils';
 import { Calendar, ExternalLink } from 'lucide-react';
 import { addDays } from 'date-fns';
-import { getRegionalDocument, Document } from '@/lib/supabase-queries';
 
 interface LongWeekendListProps {
   holidays: Holiday[];
@@ -38,27 +36,6 @@ export function LongWeekendList({
   const longWeekends = viewMode === 'month'
     ? allLongWeekends.filter(lw => lw.start <= monthEnd && lw.end >= monthStart)
     : allLongWeekends;
-  const [regionalDoc, setRegionalDoc] = useState<Document | null>(null);
-
-  useEffect(() => {
-    loadRegionalDoc();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentYear]);
-
-  const loadRegionalDoc = async () => {
-    try {
-      const doc = await getRegionalDocument(currentYear, 'papua_barat_daya');
-      if (!doc) {
-        console.warn('[LongWeekendList] Regional document not found for year:', currentYear);
-      } else if (!doc.file_url) {
-        console.warn('[LongWeekendList] Regional document found but file_url is missing:', doc);
-      }
-      setRegionalDoc(doc);
-    } catch (error) {
-      console.error('[LongWeekendList] Error loading regional document:', error);
-    }
-  };
-
   // Get all days in a long weekend period with details
   const getDaysInPeriod = (start: Date, end: Date): DayDetail[] => {
     const days: DayDetail[] = [];
@@ -114,8 +91,8 @@ export function LongWeekendList({
           : source?.documentKind === 'cancellation'
             ? 'Pembatalan'
             : 'PBD';
-    const href = source?.fileUrl || regionalDoc?.file_url;
-    const title = source?.title || regionalDoc?.title || 'Dokumen PBD';
+    const href = source?.fileUrl;
+    const title = source?.title || 'Dokumen PBD';
 
     if (href) {
       return (
