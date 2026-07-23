@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Copyright, Info } from 'lucide-react';
+import { AlertCircle, Copyright, Info, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { Header } from '@/components/header';
 import { SummaryCard } from '@/components/summary-card';
@@ -16,6 +16,7 @@ import { useMounted } from '@/lib/use-mounted';
 
 export default function Home() {
   const [holidays, setHolidays] = useState<Holiday[]>([]);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const mounted = useMounted();
   const [calendarViewMode, setCalendarViewMode] = useState<'month' | 'year'>('month');
   const [calendarFocusDate, setCalendarFocusDate] = useState(new Date());
@@ -24,6 +25,7 @@ export default function Home() {
   const currentYear = calendarFocusDate.getFullYear();
 
   const loadHolidays = useCallback(async () => {
+    setLoadError(null);
     try {
       const data = await getHolidays(currentYear);
       // Transform API data to the calendar domain format.
@@ -52,6 +54,11 @@ export default function Home() {
     } catch (error) {
       console.error('Error loading holidays:', error);
       setHolidays([]);
+      setLoadError(
+        error instanceof Error
+          ? error.message
+          : 'Data hari libur belum dapat dimuat.',
+      );
     }
   }, [currentYear]);
 
@@ -73,6 +80,28 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column */}
           <div className="lg:col-span-2 space-y-6">
+            {loadError && (
+              <div
+                role="alert"
+                className="flex flex-col gap-3 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800 sm:flex-row sm:items-center sm:justify-between dark:border-red-900 dark:bg-red-950/30 dark:text-red-200"
+              >
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="mt-0.5 shrink-0" size={18} />
+                  <div>
+                    <p className="font-medium">Data hari libur gagal dimuat</p>
+                    <p className="mt-0.5 text-red-700 dark:text-red-300">{loadError}</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={loadHolidays}
+                  className="inline-flex shrink-0 items-center justify-center gap-2 rounded-md border border-red-300 bg-white px-3 py-2 font-medium text-red-800 transition hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 dark:border-red-800 dark:bg-red-950 dark:text-red-200 dark:hover:bg-red-900"
+                >
+                  <RefreshCw size={16} />
+                  Coba lagi
+                </button>
+              </div>
+            )}
             <Calendar
               holidays={holidays}
               viewMode={calendarViewMode}

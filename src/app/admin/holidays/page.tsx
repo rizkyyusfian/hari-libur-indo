@@ -50,7 +50,10 @@ export default function HolidaysPage() {
       setHolidays(data);
     } catch (error) {
       console.error('Error loading holidays:', error);
-      showToast('Gagal memuat data', 'error');
+      showToast(
+        error instanceof Error ? error.message : 'Gagal memuat data',
+        'error',
+      );
     } finally {
       setLoading(false);
     }

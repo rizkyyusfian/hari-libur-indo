@@ -80,7 +80,10 @@ export default function DocumentsPage() {
       setRegions(regionsData);
     } catch (error) {
       console.error('Error loading data:', error);
-      showToast('Gagal memuat data', 'error');
+      showToast(
+        error instanceof Error ? error.message : 'Gagal memuat data',
+        'error',
+      );
     } finally {
       setLoading(false);
     }

@@ -16,18 +16,75 @@ export type {
   Region,
 } from '@/domain/models';
 
-async function api<T>(url: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(url, {
-    ...init,
-    cache: 'no-store',
-    headers: {
-      ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
-      ...init?.headers,
-    },
-  });
+const TRANSIENT_STATUSES = new Set([502, 503, 504]);
+const PUBLIC_RETRY_DELAY_MS = 250;
+
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number,
+    public readonly code?: string,
+    public readonly requestId?: string,
+  ) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
+
+function redirectExpiredAdminSession(url: string, status: number) {
+  if (
+    status !== 401 ||
+    !url.startsWith('/api/admin/') ||
+    typeof window === 'undefined' ||
+    window.location.pathname === '/admin/login'
+  ) {
+    return;
+  }
+
+  const next = `${window.location.pathname}${window.location.search}`;
+  window.location.replace(`/admin/login?next=${encodeURIComponent(next)}`);
+}
+
+const wait = (milliseconds: number) =>
+  new Promise(resolve => setTimeout(resolve, milliseconds));
+
+async function api<T>(
+  url: string,
+  init?: RequestInit,
+  options: { retryTransient?: boolean } = {},
+): Promise<T> {
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...init,
+      cache: 'no-store',
+      headers: {
+        ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
+        ...init?.headers,
+      },
+    });
+  } catch (error) {
+    if (options.retryTransient) {
+      await wait(PUBLIC_RETRY_DELAY_MS);
+      return api<T>(url, init);
+    }
+    throw error;
+  }
+
+  if (options.retryTransient && TRANSIENT_STATUSES.has(response.status)) {
+    await wait(PUBLIC_RETRY_DELAY_MS);
+    return api<T>(url, init);
+  }
+
   if (!response.ok) {
     const payload = await response.json().catch(() => null);
-    throw new Error(payload?.message ?? `Request failed (${response.status})`);
+    redirectExpiredAdminSession(url, response.status);
+    throw new ApiError(
+      payload?.message ?? `Request failed (${response.status})`,
+      response.status,
+      payload?.code,
+      payload?.requestId,
+    );
   }
   if (response.status === 204) return undefined as T;
   return response.json();
@@ -39,7 +96,11 @@ const publicPath = (path: string) => `/api/public${path}`;
 export const getRegions = () => api<Region[]>(adminPath('/regions'));
 
 export const getHolidays = (year?: number) =>
-  api<Holiday[]>(`${publicPath('/holidays')}${year ? `?year=${year}` : ''}`);
+  api<Holiday[]>(
+    `${publicPath('/holidays')}${year ? `?year=${year}` : ''}`,
+    undefined,
+    { retryTransient: true },
+  );
 export const getAdminHolidays = (year?: number) =>
   api<Holiday[]>(`${adminPath('/holidays')}${year ? `?year=${year}` : ''}`);
 export const getHolidayById = (id: string) => api<Holiday | null>(adminPath(`/holidays/${id}`));
@@ -57,7 +118,11 @@ export const createHolidayBatch = (rows: HolidayMutationInput[]) =>
 
 export const getDocuments = () => api<Document[]>(adminPath('/documents'));
 export const getPublishedDocumentsByYear = (year: number) =>
-  api<Document[]>(`${publicPath('/documents')}?year=${year}`);
+  api<Document[]>(
+    `${publicPath('/documents')}?year=${year}`,
+    undefined,
+    { retryTransient: true },
+  );
 export const createDocument = (doc: CreateDocumentInput) =>
   api<Document>(adminPath('/documents'), { method: 'POST', body: JSON.stringify(doc) });
 export const deleteDocument = (id: string) =>

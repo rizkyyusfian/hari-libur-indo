@@ -4,7 +4,15 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { Document, getDocuments, getHolidayById, updateHoliday, getRegions, Region } from '@/lib/data-client';
+import {
+  ApiError,
+  Document,
+  getDocuments,
+  getHolidayById,
+  updateHoliday,
+  getRegions,
+  Region,
+} from '@/lib/data-client';
 import { useToast } from '@/components/ui/toast';
 
 export default function EditHolidayPage() {
@@ -56,8 +64,13 @@ export default function EditHolidayPage() {
       });
     } catch (error) {
       console.error('Error loading holiday:', error);
-      showToast('Gagal memuat data', 'error');
-      router.push('/admin/holidays');
+      showToast(
+        error instanceof Error ? error.message : 'Gagal memuat data',
+        'error',
+      );
+      if (!(error instanceof ApiError && error.status === 401)) {
+        router.push('/admin/holidays');
+      }
     } finally {
       setLoading(false);
     }
