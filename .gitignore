@@ -42,6 +42,10 @@ next-env.d.ts
 
 #ai agents
 /docs
+/.docs
+/.superpowers
 
 # sql
 supabase-seed-2026.sql
+
+
