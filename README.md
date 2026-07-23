@@ -1,171 +1,96 @@
 # 🇮🇩 Hari Libur Indo
 
-> Kalender hari libur Indonesia dengan fokus Papua Barat Daya — smart, modern, dan helpful.
+Kalender hari libur Indonesia dengan dukungan hari libur nasional, cuti
+bersama, dan hari libur regional Papua Barat Daya.
 
 ![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-38B2AC?logo=tailwind-css)
-![Neon](https://img.shields.io/badge/Neon-PostgreSQL-00E599?logo=postgresql)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)
+![Neon](https://img.shields.io/badge/Neon-Postgres-00E599?logo=postgresql)
 ![Cloudflare R2](https://img.shields.io/badge/Cloudflare-R2-F38020?logo=cloudflare)
 ![License](https://img.shields.io/badge/License-MIT-blue)
 
-## ✨ Features
+## Overview
 
-- 📅 **Calendar View** — Monthly & yearly view dengan highlight hari libur
-- 🏝️ **Long Weekend Detection** — Auto-detect long weekend (≥3 hari berturut-turut)
-- 🎯 **Regional Support** — Hari libur nasional + regional khusus Papua Barat Daya
-- 📄 **Surat Edaran** — Link ke dokumen resmi SKB Cuti Bersama
-- 🌙 **Dark Mode** — Light/dark theme toggle
-- 📥 **Export** — Download kalender sebagai PNG atau PDF
-- ⏰ **Timezone Aware** — Support WIB, WITA, WIT
+Hari Libur Indo menyediakan kalender publik read-only dan panel admin untuk
+mengelola data hari libur serta dokumen resmi. Data disimpan di Neon Postgres,
+sedangkan PDF Surat Edaran disimpan di Cloudflare R2.
 
-## Quick Start
+## Features
 
-### Prerequisites
+- Kalender bulanan dan tahunan
+- Hari libur nasional, regional, dan cuti bersama
+- Deteksi long weekend
+- Referensi dokumen resmi
+- Export kalender sebagai PNG atau PDF
+- Light dan dark mode
+- Admin CRUD dan batch input hari libur
+- Upload, verifikasi, publish, archive, dan supersede dokumen PDF
+- Password-only admin login dengan signed session
 
-- Node.js 20+
-- npm or pnpm
+## Tech Stack
+
+| Area | Technology |
+| --- | --- |
+| Framework | Next.js 16, React 19, TypeScript |
+| Styling | Tailwind CSS 4 |
+| Database | Neon Postgres |
+| ORM | Drizzle ORM |
+| Storage | Cloudflare R2 |
+| Authentication | Server-only password session |
+| Testing | Vitest and Playwright |
+| Deployment | Vercel |
+
+## Requirements
+
+- Node.js 20 or newer
+- npm
 - Neon project
 - Cloudflare R2 bucket with a public custom domain
+- Vercel account for deployment
 
-### Installation
+## Clone and Run Locally
 
 ```bash
-# Clone repository
-git clone https://github.com/yourusername/hari-libur-indo.git
+git clone https://github.com/rizkyyusfian/hari-libur-indo.git
 cd hari-libur-indo
-
-# Install dependencies
 npm install
-
-# Setup environment variables
 cp .env.example .env.local
-# Edit .env.local with your Neon, admin-session, and R2 configuration
+```
 
-# Run development server
+Complete `.env.local`, then apply the database migrations and start the app:
+
+```bash
+npm run db:migrate
 npm run dev
 ```
 
-For the complete provider-by-provider setup, variable scope, CORS policy,
-migration procedure, and troubleshooting checklist, see
-[ENV_SETUP.md](ENV_SETUP.md).
+Open:
 
-## 🛠️ Tech Stack
+- Public site: `http://localhost:3000`
+- Admin login: `http://localhost:3000/admin/login`
 
-| Category | Technology |
-|----------|------------|
-| Framework | Next.js 16 (App Router) |
-| Styling | Tailwind CSS v4 |
-| Database | Neon Postgres + Drizzle ORM |
-| Storage | Cloudflare R2 |
-| Auth | Server-only password session |
-| Icons | Lucide React |
-| Export | html-to-image, jsPDF |
+## Deploy to Vercel
 
-## 🗄️ Database Setup
+1. Import the GitHub repository into Vercel.
+2. Add the required variables from `.env.example` in **Project Settings →
+   Environment Variables**.
+3. Apply the Drizzle migrations to the production Neon database:
 
-Generate and apply the versioned Drizzle migrations:
+   ```bash
+   npm run db:migrate
+   ```
 
-```bash
-npm run db:generate
-npm run db:migrate
-```
+4. Configure the R2 bucket CORS policy for the production application origin.
+5. Deploy the project.
+6. Verify the public calendar, admin login, and one PDF upload.
 
-The schema contains:
+## License
 
-- `regions` — Regional data (Papua Barat Daya)
-- `holidays` — Holiday entries (national & regional)
-- `documents` — Surat Edaran PDFs, including original documents, revisions, addendums, and cancellations
-- `holiday_documents` — Links specific holidays to the document(s) that support them
-- `admin_login_attempts` — Durable password-login throttling
-- `admin_audit_log` — Shared-admin operational history
+This project is licensed under the [MIT License](LICENSE).
 
-Runtime database access uses the pooled `DATABASE_URL`. Migration commands use
-the direct `DATABASE_URL_UNPOOLED`.
-
-### Record-only migration
-
-After applying the Drizzle migrations to an empty Neon database, set
-`SOURCE_DATABASE_URL` to the existing Postgres database and run the importer in
-dry-run mode:
-
-```bash
-npm run migrate:records
-```
-
-Review the generated, git-ignored `migration-report-*.json`, then apply the same
-validated import:
-
-```bash
-npm run migrate:records -- --apply
-```
-
-The importer preserves region, holiday, document-metadata, and relationship
-records only. Existing file URLs are intentionally discarded, previously
-published documents become drafts with `missing` storage state, and PDFs must
-be uploaded and published again through the admin.
-
-## R2 Setup
-
-Create a bucket-scoped read/write API token and connect a production custom
-domain to the bucket. Keep the managed `r2.dev` URL disabled in production.
-Configure bucket CORS to allow `PUT` from the application origin.
-
-Admin uploads use five-minute presigned URLs and upload directly to R2, avoiding
-Vercel Function payload limits. The server verifies object size, MIME type, and
-the PDF signature before a document can be published.
-
-## 🔐 Admin Panel
-
-Access the admin panel at `/admin/login`. Login uses the server-only `PASSWORD`
-environment variable and a signed 12-hour `HttpOnly` cookie backed by
-`ADMIN_SESSION_SECRET`.
-
-Features:
-- 📝 CRUD holidays (single & batch insert)
-- 📄 Upload Surat Edaran PDF
-- 🔗 Link holidays to exact source/revision/addendum documents
-- 🏷️ Assign regional holidays
-- 📊 Dashboard overview
-
-## Verification
-
-```bash
-npm run typecheck
-npm run lint
-npm test
-npm run test:integration
-npm run test:e2e
-npm run build
-```
-
-Integration tests require `TEST_DATABASE_URL`. Browser tests require
-`E2E_BASE_URL` and a configured running application.
-
-## 🤝 Contributing
-
-Contributions are welcome! Feel free to:
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 👤 Author
+## Author
 
 **Rizky Yusfian**
 
 - Website: [rizkyyusfian.dev](https://rizkyyusfian.dev)
 - GitHub: [@rizkyyusfian](https://github.com/rizkyyusfian)
-
----
-
-<p align="center">
-  Made with ☕ in Papua Barat Daya, Indonesia
-  <br>
-  <sub>© 2026 MRYY</sub>
-</p>
