@@ -1,51 +1,43 @@
-'use client';
-
-import { Github, Globe, Heart, MapPin, Code, Moon, Sun, Copyright, Info } from 'lucide-react';
+import type { Metadata } from 'next';
+import { Github, Globe, Heart, MapPin, Code, Copyright, Info } from 'lucide-react';
 import Link from 'next/link';
-import { useTheme } from 'next-themes';
-import { useMounted } from '@/lib/use-mounted';
+import { ThemeToggle } from '@/components/theme-toggle';
+import { publicMetadata } from '@/lib/site';
+import { aboutPageJsonLd } from '@/lib/structured-data';
+
+export const metadata: Metadata = publicMetadata({
+  path: '/about',
+  title: 'Tentang Hari Libur Indo',
+  description:
+    'Pelajari tujuan, sumber data, dan pengelola Kalender Hari Libur Indonesia dengan fokus Papua Barat Daya.',
+});
 
 export default function AboutPage() {
-  const { setTheme, resolvedTheme } = useTheme();
-  const mounted = useMounted();
-
-  const toggleDarkMode = () => {
-    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
-  };
-
-  if (!mounted) return null;
-
-  const isDark = resolvedTheme === 'dark';
-
+  const jsonLd = aboutPageJsonLd();
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 transition-colors">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }}
+      />
       {/* Header */}
       <header className="bg-white dark:bg-slate-900 border-b border-[#003049]/10 dark:border-slate-700 shadow-sm">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition">
             <span className="text-2xl">📅</span>
-            <h1 className="text-xl font-bold text-[#c1121f] dark:text-[#669bbc]">
+            <span className="text-xl font-bold text-[#c1121f] dark:text-[#8ecae6]">
               Hari Libur Indonesia
-            </h1>
+            </span>
           </Link>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={toggleDarkMode}
-              className="p-2 rounded-lg hover:bg-[#669bbc]/20 dark:hover:bg-slate-800 transition"
-              aria-label="Toggle theme"
-            >
-              {isDark ? (
-                <Sun size={20} className="text-yellow-400" />
-              ) : (
-                <Moon size={20} className="text-[#003049]" />
-              )}
-            </button>
-          </div>
+          <ThemeToggle />
         </div>
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-8">
         <article className="prose prose-slate dark:prose-invert max-w-none">
+          <h1 className="mb-8 text-3xl font-bold text-[#003049] dark:text-white">
+            Tentang Hari Libur Indo
+          </h1>
           {/* About Website */}
           <section className="mb-10">
             <h2 className="text-xl font-bold text-[#003049] dark:text-[#669bbc] flex items-center gap-2 mb-4">

@@ -123,14 +123,16 @@ export function LongWeekendList({
           <Calendar size={18} className="text-[#669bbc]" />
           <h3 className="font-semibold text-[#003049] dark:text-gray-100">Long Weekend</h3>
           <button
+            type="button"
             onClick={() => onIncludeFridayInLongWeekendChange(!includeFridayInLongWeekend)}
-            className={`ml-auto px-2 py-1 text-xs rounded-md border transition ${
+            aria-pressed={includeFridayInLongWeekend}
+            className={`ml-auto min-h-11 px-3 py-2 text-xs rounded-md border transition ${
               includeFridayInLongWeekend
                 ? 'bg-[#669bbc]/20 border-[#669bbc]/50 text-[#003049] dark:text-[#669bbc]'
                 : 'bg-white dark:bg-slate-800 border-[#003049]/20 dark:border-slate-700 text-[#003049]/70 dark:text-gray-300'
             }`}
           >
-            Include Friday: {includeFridayInLongWeekend ? 'On' : 'Off'}
+            Hitung Hari Jumat: {includeFridayInLongWeekend ? 'Aktif' : 'Nonaktif'}
           </button>
         </div>
         <p className="text-sm text-[#003049]/70 dark:text-gray-400 text-center py-8">
@@ -150,14 +152,16 @@ export function LongWeekendList({
           Long Weekend ({longWeekends.length})
         </h3>
         <button
+          type="button"
           onClick={() => onIncludeFridayInLongWeekendChange(!includeFridayInLongWeekend)}
-          className={`ml-auto px-2 py-1 text-xs rounded-md border transition ${
+          aria-pressed={includeFridayInLongWeekend}
+          className={`ml-auto min-h-11 px-3 py-2 text-xs rounded-md border transition ${
             includeFridayInLongWeekend
               ? 'bg-[#669bbc]/20 border-[#669bbc]/50 text-[#003049] dark:text-[#669bbc]'
               : 'bg-white dark:bg-slate-800 border-[#003049]/20 dark:border-slate-700 text-[#003049]/70 dark:text-gray-300'
           }`}
         >
-          Hitung Hari Jumat: {includeFridayInLongWeekend ? 'On' : 'Off'}
+          Hitung Hari Jumat: {includeFridayInLongWeekend ? 'Aktif' : 'Nonaktif'}
         </button>
       </div>
 
@@ -208,7 +212,7 @@ export function LongWeekendList({
                         </td>
                         <td className={`px-3 py-2 ${
                           isHoliday(day.date, holidays) 
-                            ? 'text-[#c1121f] dark:text-[#c1121f] font-medium' 
+                            ? 'text-[#c1121f] dark:text-[#ff8a95] font-medium'
                             : 'text-[#003049]/70 dark:text-gray-400'
                         }`}>
                           <span className="flex items-center gap-1.5">

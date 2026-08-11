@@ -2,7 +2,6 @@
 
 import { Download, Image as ImageIcon, FileText, Loader2 } from 'lucide-react';
 import { useState } from 'react';
-import { exportAsImage, exportAsPDF } from '@/lib/export-utils';
 
 interface ExportControlsProps {
   calendarElementId?: string;
@@ -16,9 +15,11 @@ export function ExportControls({ calendarElementId = 'calendar-export' }: Export
     setIsExporting(true);
     setExportType('image');
     try {
+      const { exportAsImage } = await import('@/lib/export-utils');
       await exportAsImage(calendarElementId);
     } catch (error) {
       console.error('Export image error:', error);
+      alert('Gagal memuat fitur ekspor gambar. Silakan coba lagi.');
     } finally {
       setIsExporting(false);
       setExportType(null);
@@ -29,9 +30,11 @@ export function ExportControls({ calendarElementId = 'calendar-export' }: Export
     setIsExporting(true);
     setExportType('pdf');
     try {
+      const { exportAsPDF } = await import('@/lib/export-utils');
       await exportAsPDF(calendarElementId);
     } catch (error) {
       console.error('Export PDF error:', error);
+      alert('Gagal memuat fitur ekspor PDF. Silakan coba lagi.');
     } finally {
       setIsExporting(false);
       setExportType(null);
@@ -49,7 +52,7 @@ export function ExportControls({ calendarElementId = 'calendar-export' }: Export
         <button
           onClick={handleExportImage}
           disabled={isExporting}
-          className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-[#669bbc]/20 hover:bg-[#669bbc]/40 dark:bg-[#669bbc]/20 dark:hover:bg-[#669bbc]/30 text-[#003049] dark:text-[#669bbc] text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex min-h-11 items-center justify-center gap-2 px-3 py-2 rounded-lg bg-[#669bbc]/20 hover:bg-[#669bbc]/40 dark:bg-[#669bbc]/20 dark:hover:bg-[#669bbc]/30 text-[#003049] dark:text-[#669bbc] text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isExporting && exportType === 'image' ? <Loader2 className="animate-spin" size={16} /> : <ImageIcon size={16} />}
           <span>Gambar</span>
@@ -58,7 +61,7 @@ export function ExportControls({ calendarElementId = 'calendar-export' }: Export
         <button
           onClick={handleExportPDF}
           disabled={isExporting}
-          className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-[#c1121f]/10 hover:bg-[#c1121f]/20 dark:bg-[#c1121f]/20 dark:hover:bg-[#c1121f]/30 text-[#c1121f] dark:text-[#c1121f] text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex min-h-11 items-center justify-center gap-2 px-3 py-2 rounded-lg bg-[#c1121f]/10 hover:bg-[#c1121f]/20 dark:bg-[#c1121f]/20 dark:hover:bg-[#c1121f]/30 text-[#c1121f] dark:text-[#c1121f] text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isExporting && exportType === 'pdf' ? <Loader2 className="animate-spin" size={16} /> : <FileText size={16} />}
           <span>PDF</span>

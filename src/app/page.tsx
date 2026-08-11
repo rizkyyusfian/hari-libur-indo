@@ -1,158 +1,112 @@
-'use client';
-
-import { useCallback, useEffect, useState } from 'react';
-import { AlertCircle, Copyright, Info, RefreshCw } from 'lucide-react';
+import type { Metadata } from 'next';
+import { Copyright, Info } from 'lucide-react';
 import Link from 'next/link';
 import { Header } from '@/components/header';
-import { SummaryCard } from '@/components/summary-card';
-import { Calendar } from '@/components/calendar';
-import { LongWeekendList } from '@/components/long-weekend-list';
-import { ExportControls } from '@/components/export-controls';
-import { TimezoneInfo } from '@/components/timezone-info';
-import DocumentReference from '@/components/document-reference';
-import { getHolidays } from '@/lib/data-client';
-import { Holiday } from '@/lib/date-utils';
-import { useMounted } from '@/lib/use-mounted';
+import { HolidayApp } from '@/components/holiday-app';
+import { PublicHolidayOverview } from '@/components/public-holiday-overview';
+import type { Document, Holiday } from '@/domain/models';
+import { publicMetadata } from '@/lib/site';
+import { toCalendarHolidaySnapshots } from '@/lib/public-holiday-view';
+import { webApplicationJsonLd, websiteJsonLd } from '@/lib/structured-data';
+import { getPublicYearSnapshot } from '@/server/data/public-site';
 
-export default function Home() {
-  const [holidays, setHolidays] = useState<Holiday[]>([]);
-  const [loadError, setLoadError] = useState<string | null>(null);
-  const mounted = useMounted();
-  const [calendarViewMode, setCalendarViewMode] = useState<'month' | 'year'>('month');
-  const [calendarFocusDate, setCalendarFocusDate] = useState(new Date());
-  const [showWFHFriday, setShowWFHFriday] = useState(false);
-  const [includeFridayInLongWeekend, setIncludeFridayInLongWeekend] = useState(false);
-  const currentYear = calendarFocusDate.getFullYear();
+export const revalidate = 3600;
 
-  const loadHolidays = useCallback(async () => {
-    setLoadError(null);
-    try {
-      const data = await getHolidays(currentYear);
-      // Transform API data to the calendar domain format.
-      const parsedHolidays: Holiday[] = data.map(h => ({
-        id: h.id,
-        date: new Date(h.date),
-        name: h.name,
-        type: h.type as 'national' | 'regional',
-        region: h.region?.code || undefined,
-        isCutiBersama: h.is_cuti_bersama,
-        sourceDocuments: h.holiday_documents
-          ?.map(link => link.document)
-          .filter(
-            (document): document is NonNullable<typeof document> =>
-              Boolean(document?.file_url),
-          )
-          .map(document => ({
-            id: document.id,
-            title: document.title,
-            fileUrl: document.file_url!,
-            type: document.type,
-            documentKind: document.document_kind,
-          })),
-      }));
-      setHolidays(parsedHolidays);
-    } catch (error) {
-      console.error('Error loading holidays:', error);
-      setHolidays([]);
-      setLoadError(
-        error instanceof Error
-          ? error.message
-          : 'Data hari libur belum dapat dimuat.',
-      );
-    }
-  }, [currentYear]);
+const currentPapuaYear = () =>
+  Number(
+    new Intl.DateTimeFormat('en', {
+      year: 'numeric',
+      timeZone: 'Asia/Jayapura',
+    }).format(new Date()),
+  );
 
-  useEffect(() => {
-    // Year navigation loads through the read-only application API.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    loadHolidays();
-  }, [loadHolidays]);
+const currentPapuaMonth = () =>
+  Number(
+    new Intl.DateTimeFormat('en', {
+      month: 'numeric',
+      timeZone: 'Asia/Jayapura',
+    }).format(new Date()),
+  ) - 1;
 
-  if (!mounted) {
-    return null;
+export function generateMetadata(): Metadata {
+  const year = currentPapuaYear();
+  return publicMetadata({
+    path: '/',
+    title: `Kalender Hari Libur Indonesia ${year} & Papua Barat Daya`,
+    description: `Kalender hari libur nasional, cuti bersama, long weekend, dan libur regional Papua Barat Daya tahun ${year} dengan dokumen sumber.`,
+  });
+}
+
+export default async function Home() {
+  const year = currentPapuaYear();
+  let holidays: Holiday[] = [];
+  let documents: Document[] = [];
+  let initialError: string | undefined;
+
+  try {
+    const snapshot = await getPublicYearSnapshot(year);
+    holidays = snapshot.holidays;
+    documents = snapshot.documents;
+  } catch (error) {
+    console.error('Unable to load the initial public holiday snapshot:', error);
+    initialError = `Data hari libur ${year} belum dapat dimuat.`;
   }
 
+  const websiteSchema = JSON.stringify(websiteJsonLd()).replace(/</g, '\\u003c');
+  const applicationSchema = JSON.stringify(webApplicationJsonLd(year)).replace(/</g, '\\u003c');
+
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 transition-colors">
+    <div className="min-h-screen bg-white transition-colors dark:bg-slate-950">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: websiteSchema }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: applicationSchema }} />
       <Header />
 
-      <main className="max-w-6xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column */}
-          <div className="lg:col-span-2 space-y-6">
-            {loadError && (
-              <div
-                role="alert"
-                className="flex flex-col gap-3 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800 sm:flex-row sm:items-center sm:justify-between dark:border-red-900 dark:bg-red-950/30 dark:text-red-200"
-              >
-                <div className="flex items-start gap-2">
-                  <AlertCircle className="mt-0.5 shrink-0" size={18} />
-                  <div>
-                    <p className="font-medium">Data hari libur gagal dimuat</p>
-                    <p className="mt-0.5 text-red-700 dark:text-red-300">{loadError}</p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={loadHolidays}
-                  className="inline-flex shrink-0 items-center justify-center gap-2 rounded-md border border-red-300 bg-white px-3 py-2 font-medium text-red-800 transition hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 dark:border-red-800 dark:bg-red-950 dark:text-red-200 dark:hover:bg-red-900"
-                >
-                  <RefreshCw size={16} />
-                  Coba lagi
-                </button>
-              </div>
-            )}
-            <Calendar
-              holidays={holidays}
-              viewMode={calendarViewMode}
-              focusDate={calendarFocusDate}
-              onViewModeChange={setCalendarViewMode}
-              onFocusDateChange={setCalendarFocusDate}
-              showWFHFriday={showWFHFriday}
-              onShowWFHFridayChange={setShowWFHFriday}
-            />
-            <LongWeekendList
-              holidays={holidays}
-              viewMode={calendarViewMode}
-              focusDate={calendarFocusDate}
-              includeFridayInLongWeekend={includeFridayInLongWeekend}
-              onIncludeFridayInLongWeekendChange={setIncludeFridayInLongWeekend}
-            />
-            <DocumentReference year={currentYear} />
-          </div>
+      <main className="mx-auto max-w-6xl px-4 py-8">
+        <header className="max-w-3xl">
+          <p className="text-sm font-semibold uppercase tracking-wide text-[#58717b] dark:text-[#b7c9d0]">
+            Kalender nasional dan Papua Barat Daya
+          </p>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#003049] dark:text-white sm:text-4xl">
+            Kalender Hari Libur Indonesia {year}
+          </h1>
+          <p className="mt-4 text-base leading-7 text-[#274b5a] dark:text-gray-300 sm:text-lg">
+            Periksa hari libur nasional, cuti bersama, libur regional Papua Barat Daya,
+            dan rangkaian long weekend. Gunakan tampilan bulanan atau tahunan, lalu unduh
+            kalender untuk membantu merencanakan waktu istirahat dan perjalanan.
+          </p>
+        </header>
 
-          {/* Right Column */}
-          <div className="lg:col-span-1 space-y-6">
-            <SummaryCard holidays={holidays} />
-            <TimezoneInfo />
-            <ExportControls />
-          </div>
-        </div>
+        <HolidayApp
+          initialYear={year}
+          initialMonth={currentPapuaMonth()}
+          initialHolidays={toCalendarHolidaySnapshots(holidays)}
+          initialDocuments={documents}
+          initialError={initialError}
+        />
 
-        {/* Footer */}
-        <footer className="mt-12 pt-8 border-t border-[#003049]/10 dark:border-slate-800">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-[#003049]/70 dark:text-gray-400">
-            <div className="flex items-center gap-4">
-              <Link 
-                href="/about" 
-                className="flex items-center gap-1 hover:text-[#c1121f] dark:hover:text-[#669bbc] transition"
-              >
-                <Info size={14} />
-                <span>Tentang</span>
-              </Link>
-            </div>
+        <PublicHolidayOverview year={year} holidays={holidays} documents={documents} />
+
+        <footer className="mt-12 border-t border-[#003049]/10 pt-8 dark:border-slate-800">
+          <div className="flex flex-col items-center justify-between gap-4 text-sm text-[#405c68] dark:text-gray-400 sm:flex-row">
+            <Link
+              href="/about"
+              className="flex items-center gap-1 transition hover:text-[#c1121f] dark:hover:text-[#8ecae6]"
+            >
+              <Info size={14} aria-hidden="true" />
+              Tentang dan metodologi
+            </Link>
             <div className="text-center">
-              <p>Hari Libur Indonesia - Papua Barat Daya</p>
-              <p className="text-xs mt-1">Data libur diperbarui untuk tahun {currentYear}</p>
+              <p>Hari Libur Indonesia — Papua Barat Daya</p>
+              <p className="mt-1 text-xs">Data kalender untuk tahun {year}</p>
             </div>
             <a
               href="https://rizkyyusfian.dev"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 hover:text-[#c1121f] dark:hover:text-[#669bbc] transition"
+              className="inline-flex items-center gap-1 transition hover:text-[#c1121f] dark:hover:text-[#8ecae6]"
             >
-              <Copyright size={14} />
-              <span>MRYY 2026</span>
+              <Copyright size={14} aria-hidden="true" />
+              MRYY 2026
             </a>
           </div>
         </footer>

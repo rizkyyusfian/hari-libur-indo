@@ -129,7 +129,7 @@ export function Calendar({
     } else if (weekend) {
       // Weekend - red font only (no border)
       bgClass = 'bg-white dark:bg-slate-800';
-      textClass = 'text-[#c1121f] dark:text-[#c1121f]';
+      textClass = 'text-[#c1121f] dark:text-[#ff8a95]';
       borderClass = 'border border-transparent';
     } else if (fridayWFH) {
       bgClass = 'bg-[#669bbc]/15 dark:bg-[#669bbc]/20';
@@ -140,8 +140,8 @@ export function Calendar({
     return { bgClass, textClass, borderClass };
   };
 
-  const handleMouseEnter = (date: Date, event: React.MouseEvent) => {
-    const rect = event.currentTarget.getBoundingClientRect();
+  const showDatePopover = (date: Date, element: HTMLElement) => {
+    const rect = element.getBoundingClientRect();
     setPopoverPosition({ x: rect.left + rect.width / 2, y: rect.bottom });
     setHoveredDate(date);
   };
@@ -173,32 +173,46 @@ export function Calendar({
             {monthName}
           </h4>
         )}
-        <div className={`grid grid-cols-7 ${compact ? 'gap-0.5' : 'gap-1'}`}>
+        <div
+          className={`grid grid-cols-7 ${compact ? 'gap-0.5' : 'gap-1'}`}
+          role="grid"
+          aria-label={`Kalender ${monthName} ${monthDate.getFullYear()}`}
+        >
           {/* Day headers */}
           {dayNames.map(day => (
-            <div key={day} className={`text-center font-semibold text-[#003049]/60 dark:text-gray-500 ${compact ? 'text-[10px] py-1' : 'text-xs py-2'}`}>
+            <div
+              key={day}
+              role="columnheader"
+              className={`text-center font-semibold text-[#405c68] dark:text-gray-300 ${compact ? 'text-[10px] py-1' : 'text-xs py-2'}`}
+            >
               {compact ? day.charAt(0) : day}
             </div>
           ))}
           {/* Days */}
           {days.map((date, idx) => {
             if (!date) {
-              return <div key={`empty-${idx}`} className={`${compact ? 'aspect-square' : 'aspect-square'}`} />;
+              return <div key={`empty-${idx}`} role="presentation" className="aspect-square" />;
             }
 
             const { bgClass, textClass, borderClass } = getDayClasses(date);
             const holiday = isHoliday(date, holidays);
 
             return (
-              <div
+              <button
+                type="button"
                 key={formatDateISO(date)}
-                className={`${compact ? 'aspect-square text-[10px]' : 'aspect-square text-sm'} rounded ${bgClass} ${textClass} ${borderClass} flex items-center justify-center cursor-pointer transition hover:ring-2 hover:ring-[#669bbc]/50`}
-                onMouseEnter={(e) => handleMouseEnter(date, e)}
+                role="gridcell"
+                className={`${compact ? 'aspect-square text-[10px]' : 'aspect-square text-sm'} flex items-center justify-center rounded ${bgClass} ${textClass} ${borderClass} cursor-pointer transition hover:ring-2 hover:ring-[#669bbc]/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#003049] dark:focus-visible:ring-[#8ecae6]`}
+                onMouseEnter={(event) => showDatePopover(date, event.currentTarget)}
                 onMouseLeave={handleMouseLeave}
+                onFocus={(event) => showDatePopover(date, event.currentTarget)}
+                onBlur={handleMouseLeave}
+                aria-current={date.toDateString() === today.toDateString() ? 'date' : undefined}
+                aria-label={`${date.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}${holiday ? `, ${holiday.name}${holiday.isCutiBersama ? ', cuti bersama' : ''}` : showWFHFriday && date.getDay() === 5 ? ', WFH Jumat' : ''}`}
                 title={holiday?.name || (showWFHFriday && date.getDay() === 5 ? 'WFH Jumat' : '')}
               >
                 {date.getDate()}
-              </div>
+              </button>
             );
           })}
         </div>
@@ -220,7 +234,7 @@ export function Calendar({
   return (
     <div id="calendar-export" className="bg-white dark:bg-slate-900 rounded-lg border border-[#003049]/10 dark:border-slate-700 p-4 shadow-sm relative">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
           <h2 className="text-lg font-semibold text-[#003049] dark:text-gray-100 capitalize">
             {viewMode === 'month' 
@@ -228,10 +242,13 @@ export function Calendar({
               : focusDate.getFullYear()}
           </h2>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button
+            type="button"
             onClick={() => onShowWFHFridayChange(!showWFHFriday)}
-            className={`px-2 py-1 text-xs rounded-md border transition ${
+            aria-pressed={showWFHFriday}
+            aria-label={`${showWFHFriday ? 'Sembunyikan' : 'Tampilkan'} WFH setiap Jumat`}
+            className={`min-h-11 px-3 py-2 text-xs rounded-md border transition ${
               showWFHFriday
                 ? 'bg-[#669bbc]/20 border-[#669bbc]/50 text-[#003049] dark:text-[#669bbc]'
                 : 'bg-white dark:bg-slate-800 border-[#003049]/20 dark:border-slate-700 text-[#003049]/70 dark:text-gray-300'
@@ -241,8 +258,9 @@ export function Calendar({
             WFH Jumat: {showWFHFriday ? 'On' : 'Off'}
           </button>
           <button
+            type="button"
             onClick={backToToday}
-            className="px-2 py-1 text-xs rounded-md border border-[#003049]/20 dark:border-slate-700 text-[#003049] dark:text-gray-100 hover:bg-[#669bbc]/20 dark:hover:bg-slate-800 transition"
+            className="min-h-11 px-3 py-2 text-xs rounded-md border border-[#003049]/20 dark:border-slate-700 text-[#003049] dark:text-gray-100 hover:bg-[#669bbc]/20 dark:hover:bg-slate-800 transition"
             title="Kembali ke tanggal hari ini"
           >
             Hari Ini
@@ -250,15 +268,21 @@ export function Calendar({
           {/* View toggle */}
           <div className="flex bg-gray-100 dark:bg-slate-800 rounded-lg p-1">
             <button
+              type="button"
               onClick={() => onViewModeChange('month')}
-              className={`p-1.5 rounded ${viewMode === 'month' ? 'bg-white dark:bg-slate-700 shadow-sm' : ''}`}
+              aria-label="Gunakan tampilan bulanan"
+              aria-pressed={viewMode === 'month'}
+              className={`inline-flex size-11 items-center justify-center rounded ${viewMode === 'month' ? 'bg-white dark:bg-slate-700 shadow-sm' : ''}`}
               title="Tampilan Bulanan"
             >
               <CalendarIcon size={16} className="text-[#003049] dark:text-gray-300" />
             </button>
             <button
+              type="button"
               onClick={() => onViewModeChange('year')}
-              className={`p-1.5 rounded ${viewMode === 'year' ? 'bg-white dark:bg-slate-700 shadow-sm' : ''}`}
+              aria-label="Gunakan tampilan tahunan"
+              aria-pressed={viewMode === 'year'}
+              className={`inline-flex size-11 items-center justify-center rounded ${viewMode === 'year' ? 'bg-white dark:bg-slate-700 shadow-sm' : ''}`}
               title="Tampilan Tahunan"
             >
               <CalendarDays size={16} className="text-[#003049] dark:text-gray-300" />
@@ -266,14 +290,18 @@ export function Calendar({
           </div>
           {/* Navigation */}
           <button 
+            type="button"
             onClick={viewMode === 'month' ? prevMonth : prevYear} 
-            className="p-2 hover:bg-[#669bbc]/20 dark:hover:bg-slate-800 rounded-lg transition text-[#003049] dark:text-gray-100"
+            aria-label={viewMode === 'month' ? 'Bulan sebelumnya' : 'Tahun sebelumnya'}
+            className="inline-flex size-11 items-center justify-center hover:bg-[#669bbc]/20 dark:hover:bg-slate-800 rounded-lg transition text-[#003049] dark:text-gray-100"
           >
             <ChevronLeft size={20} />
           </button>
           <button 
+            type="button"
             onClick={viewMode === 'month' ? nextMonth : nextYear} 
-            className="p-2 hover:bg-[#669bbc]/20 dark:hover:bg-slate-800 rounded-lg transition text-[#003049] dark:text-gray-100"
+            aria-label={viewMode === 'month' ? 'Bulan berikutnya' : 'Tahun berikutnya'}
+            className="inline-flex size-11 items-center justify-center hover:bg-[#669bbc]/20 dark:hover:bg-slate-800 rounded-lg transition text-[#003049] dark:text-gray-100"
           >
             <ChevronRight size={20} />
           </button>
@@ -360,7 +388,7 @@ export function Calendar({
       ) : (
         /* Yearly View - 4x3 grid */
         <>
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {Array.from({ length: 12 }, (_, i) => (
               <div key={i} className="border border-[#003049]/10 dark:border-slate-700 rounded-lg p-2">
                 {renderMonth(new Date(focusDate.getFullYear(), i, 1), true)}

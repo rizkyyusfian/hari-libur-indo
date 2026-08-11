@@ -1,32 +1,12 @@
-'use client';
-
-import { useCallback, useEffect, useState } from 'react';
 import { FileText, ExternalLink } from 'lucide-react';
-import { getPublishedDocumentsByYear, Document } from '@/lib/data-client';
+import type { Document } from '@/domain/models';
 
 interface DocumentReferenceProps {
-  year?: number;
+  documents: Document[];
+  loading?: boolean;
 }
 
-export default function DocumentReference({ year }: DocumentReferenceProps) {
-  const [documents, setDocuments] = useState<Document[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const loadDocuments = useCallback(async () => {
-    try {
-      const docs = await getPublishedDocumentsByYear(year || new Date().getFullYear());
-      setDocuments(docs);
-    } catch (error) {
-      console.error('Error loading documents:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [year]);
-
-  useEffect(() => {
-    loadDocuments();
-  }, [loadDocuments]);
-
+export default function DocumentReference({ documents, loading = false }: DocumentReferenceProps) {
   if (loading) {
     return null;
   }
@@ -36,6 +16,7 @@ export default function DocumentReference({ year }: DocumentReferenceProps) {
   }
 
   const nationalDocs = documents.filter(document => document.type === 'national');
+  const regionalDocs = documents.filter(document => document.type === 'regional');
 
   return (
     <div className="p-3 bg-gray-50 dark:bg-slate-800/50 rounded-lg border border-[#003049]/10 dark:border-slate-700">
@@ -49,9 +30,9 @@ export default function DocumentReference({ year }: DocumentReferenceProps) {
             </p>
           </div>
           
-          {/* {regionalDocs.length > 0 && (
+          {regionalDocs.length > 0 && (
             <DocumentGroup title="Papua Barat Daya" documents={regionalDocs} />
-          )} */}
+          )}
         </div>
       </div>
     </div>

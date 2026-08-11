@@ -1,7 +1,26 @@
-// This module provides utilities for exporting calendar
-// Using html-to-image instead of html2canvas (better support for modern CSS like lab() colors)
+// This module provides utilities for exporting calendar.
+// Export-only dependencies are loaded after the user requests an export.
 
-import * as htmlToImage from 'html-to-image';
+const PNG_OPTIONS = {
+  quality: 1,
+  pixelRatio: 2,
+  backgroundColor: '#ffffff',
+  style: {
+    colorScheme: 'light',
+  },
+  filter: (node: HTMLElement) => {
+    if (node instanceof Element) {
+      const tagName = node.tagName?.toLowerCase();
+      return tagName !== 'script' && tagName !== 'noscript';
+    }
+    return true;
+  },
+};
+
+async function renderCalendarPng(element: HTMLElement) {
+  const htmlToImage = await import('html-to-image');
+  return htmlToImage.toPng(element, PNG_OPTIONS);
+}
 
 export const exportAsImage = async (elementId: string): Promise<void> => {
   try {
@@ -18,23 +37,7 @@ export const exportAsImage = async (elementId: string): Promise<void> => {
     // Wait for rendering to complete
     await new Promise(resolve => setTimeout(resolve, 300));
     
-    const dataUrl = await htmlToImage.toPng(element, {
-      quality: 1,
-      pixelRatio: 2,
-      backgroundColor: '#ffffff',
-      style: {
-        // Ensure light mode styling
-        colorScheme: 'light',
-      },
-      filter: (node) => {
-        // Filter out script and style tags
-        if (node instanceof Element) {
-          const tagName = node.tagName?.toLowerCase();
-          return tagName !== 'script' && tagName !== 'noscript';
-        }
-        return true;
-      },
-    });
+    const dataUrl = await renderCalendarPng(element);
 
     const link = document.createElement('a');
     link.href = dataUrl;
@@ -67,21 +70,7 @@ export const exportAsPDF = async (elementId: string): Promise<void> => {
     // Wait for rendering to complete
     await new Promise(resolve => setTimeout(resolve, 300));
 
-    const dataUrl = await htmlToImage.toPng(element, {
-      quality: 1,
-      pixelRatio: 2,
-      backgroundColor: '#ffffff',
-      style: {
-        colorScheme: 'light',
-      },
-      filter: (node) => {
-        if (node instanceof Element) {
-          const tagName = node.tagName?.toLowerCase();
-          return tagName !== 'script' && tagName !== 'noscript';
-        }
-        return true;
-      },
-    });
+    const dataUrl = await renderCalendarPng(element);
 
     // Create an image to get dimensions
     const img = new Image();
