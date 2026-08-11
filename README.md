@@ -92,5 +92,5 @@ This project is licensed under the [MIT License](LICENSE).
 
 **Rizky Yusfian**
 
-- Website: [rizkyyusfian.dev](https://rizkyyusfian.dev)
+- Website: [rizkyyusfian.tech](https://rizkyyusfian.tech)
 - GitHub: [@rizkyyusfian](https://github.com/rizkyyusfian)

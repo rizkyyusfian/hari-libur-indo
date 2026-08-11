@@ -105,7 +105,7 @@ export default function AdminShell({
           {/* Sidebar Footer */}
           <div className="p-4 border-t border-[#003049]/10 dark:border-slate-700">
             <a
-              href="https://rizkyyusfian.dev"
+              href="https://rizkyyusfian.tech"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-1 text-xs text-[#003049]/60 dark:text-gray-500 hover:text-[#c1121f] dark:hover:text-[#669bbc] transition"
