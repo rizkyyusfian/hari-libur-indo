@@ -154,7 +154,7 @@ export function Calendar({
   const renderMonth = (monthDate: Date, compact = false) => {
     const daysInMonth = getDaysInMonth(monthDate);
     const firstDay = getFirstDayOfMonth(monthDate);
-    const days = [];
+    const days: Array<Date | null> = [];
 
     for (let i = 0; i < firstDay; i++) {
       days.push(null);
@@ -163,6 +163,14 @@ export function Calendar({
     for (let i = 1; i <= daysInMonth; i++) {
       days.push(new Date(monthDate.getFullYear(), monthDate.getMonth(), i));
     }
+
+    while (days.length % 7 !== 0) {
+      days.push(null);
+    }
+
+    const weeks = Array.from({ length: days.length / 7 }, (_, weekIndex) =>
+      days.slice(weekIndex * 7, weekIndex * 7 + 7),
+    );
 
     const monthName = monthDate.toLocaleDateString('id-ID', { month: 'long' });
 
@@ -178,43 +186,54 @@ export function Calendar({
           role="grid"
           aria-label={`Kalender ${monthName} ${monthDate.getFullYear()}`}
         >
-          {/* Day headers */}
-          {dayNames.map(day => (
-            <div
-              key={day}
-              role="columnheader"
-              className={`text-center font-semibold text-[#405c68] dark:text-gray-300 ${compact ? 'text-[10px] py-1' : 'text-xs py-2'}`}
-            >
-              {compact ? day.charAt(0) : day}
+          <div role="row" className="contents">
+            {dayNames.map(day => (
+              <div
+                key={day}
+                role="columnheader"
+                className={`text-center font-semibold text-[#405c68] dark:text-gray-300 ${compact ? 'text-[10px] py-1' : 'text-xs py-2'}`}
+              >
+                {compact ? day.charAt(0) : day}
+              </div>
+            ))}
+          </div>
+          {weeks.map((week, weekIndex) => (
+            <div key={`week-${weekIndex}`} role="row" className="contents">
+              {week.map((date, dayIndex) => {
+                if (!date) {
+                  return (
+                    <div
+                      key={`empty-${weekIndex}-${dayIndex}`}
+                      role="gridcell"
+                      aria-hidden="true"
+                      className="aspect-square"
+                    />
+                  );
+                }
+
+                const { bgClass, textClass, borderClass } = getDayClasses(date);
+                const holiday = isHoliday(date, holidays);
+
+                return (
+                  <button
+                    type="button"
+                    key={formatDateISO(date)}
+                    role="gridcell"
+                    className={`${compact ? 'aspect-square text-[10px]' : 'aspect-square text-sm'} flex items-center justify-center rounded ${bgClass} ${textClass} ${borderClass} cursor-pointer transition hover:ring-2 hover:ring-[#669bbc]/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#003049] dark:focus-visible:ring-[#8ecae6]`}
+                    onMouseEnter={(event) => showDatePopover(date, event.currentTarget)}
+                    onMouseLeave={handleMouseLeave}
+                    onFocus={(event) => showDatePopover(date, event.currentTarget)}
+                    onBlur={handleMouseLeave}
+                    aria-current={date.toDateString() === today.toDateString() ? 'date' : undefined}
+                    aria-label={`${date.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}${holiday ? `, ${holiday.name}${holiday.isCutiBersama ? ', cuti bersama' : ''}` : showWFHFriday && date.getDay() === 5 ? ', WFH Jumat' : ''}`}
+                    title={holiday?.name || (showWFHFriday && date.getDay() === 5 ? 'WFH Jumat' : '')}
+                  >
+                    {date.getDate()}
+                  </button>
+                );
+              })}
             </div>
           ))}
-          {/* Days */}
-          {days.map((date, idx) => {
-            if (!date) {
-              return <div key={`empty-${idx}`} role="presentation" className="aspect-square" />;
-            }
-
-            const { bgClass, textClass, borderClass } = getDayClasses(date);
-            const holiday = isHoliday(date, holidays);
-
-            return (
-              <button
-                type="button"
-                key={formatDateISO(date)}
-                role="gridcell"
-                className={`${compact ? 'aspect-square text-[10px]' : 'aspect-square text-sm'} flex items-center justify-center rounded ${bgClass} ${textClass} ${borderClass} cursor-pointer transition hover:ring-2 hover:ring-[#669bbc]/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#003049] dark:focus-visible:ring-[#8ecae6]`}
-                onMouseEnter={(event) => showDatePopover(date, event.currentTarget)}
-                onMouseLeave={handleMouseLeave}
-                onFocus={(event) => showDatePopover(date, event.currentTarget)}
-                onBlur={handleMouseLeave}
-                aria-current={date.toDateString() === today.toDateString() ? 'date' : undefined}
-                aria-label={`${date.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}${holiday ? `, ${holiday.name}${holiday.isCutiBersama ? ', cuti bersama' : ''}` : showWFHFriday && date.getDay() === 5 ? ', WFH Jumat' : ''}`}
-                title={holiday?.name || (showWFHFriday && date.getDay() === 5 ? 'WFH Jumat' : '')}
-              >
-                {date.getDate()}
-              </button>
-            );
-          })}
         </div>
       </div>
     );

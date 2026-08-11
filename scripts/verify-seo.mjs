@@ -14,6 +14,12 @@ assert.equal(home.response.status, 200, 'Homepage must return HTTP 200');
 assert.equal(count(home.body, /<h1(?:\s|>)/g), 1, 'Homepage must contain exactly one H1');
 assert.match(home.body, /Kalender Hari Libur Indonesia \d{4}/, 'Homepage needs crawlable title copy');
 assert.match(home.body, /Ringkasan terverifikasi/, 'Homepage needs crawlable summary content');
+assert.match(
+  home.body,
+  /penanda ini dapat beririsan dengan kategori nasional atau regional/,
+  'Homepage must explain that cuti bersama overlaps the primary categories',
+);
+assert.ok(count(home.body, /role="row"/g) >= 2, 'Calendar grid needs explicit ARIA rows');
 assert.equal(
   home.body.match(/<link rel="canonical" href="([^"]+)"/)?.[1],
   'https://hari-libur-indo.vercel.app',

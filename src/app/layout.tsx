@@ -1,19 +1,8 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { Analytics } from "@vercel/analytics/next";
 import { absoluteUrl, SITE_NAME, SITE_ORIGIN } from "@/lib/site";
 import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 const defaultTitle = "Kalender Hari Libur Indonesia";
 const defaultDescription =
@@ -27,7 +16,7 @@ export const metadata: Metadata = {
   },
   description: defaultDescription,
   applicationName: SITE_NAME,
-  authors: [{ name: "Rizky Yusfian", url: "https://rizkyyusfian.dev" }],
+  authors: [{ name: "Rizky Yusfian", url: "https://rizkyyusfian.tech" }],
   creator: "Rizky Yusfian",
   publisher: SITE_NAME,
   robots: {
@@ -69,10 +58,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-<ThemeProvider>{children}</ThemeProvider>
+      <body className="antialiased">
+        <ThemeProvider>{children}</ThemeProvider>
         <Analytics />
       </body>
     </html>

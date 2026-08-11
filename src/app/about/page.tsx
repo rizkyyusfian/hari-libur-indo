@@ -9,7 +9,7 @@ export const metadata: Metadata = publicMetadata({
   path: '/about',
   title: 'Tentang Hari Libur Indo',
   description:
-    'Pelajari tujuan, sumber data, dan pengelola Kalender Hari Libur Indonesia dengan fokus Papua Barat Daya.',
+    'Pelajari tujuan, sumber resmi, proses verifikasi, koreksi data, dan pengelola Kalender Hari Libur Indonesia yang berfokus pada Papua Barat Daya.',
 });
 
 export default function AboutPage() {
@@ -46,7 +46,7 @@ export default function AboutPage() {
             </h2>
             <div className="bg-gray-50 dark:bg-slate-900 rounded-lg p-6 border border-[#003049]/10 dark:border-slate-700">
               <p className="text-[#003049]/80 dark:text-gray-300 leading-relaxed">
-                <strong>Hari Libur Indo</strong> adalah side project yang nunjukin kalender hari libur 
+                <strong>Hari Libur Indo</strong> adalah side project yang nunjukin kalender hari libur
                 nasional + regional Indonesia, fokus ke wilayah Papua Barat Daya. Simple tapi powerful.
               </p>
               <p className="text-[#003049]/80 dark:text-gray-300 leading-relaxed mt-4">
@@ -68,8 +68,8 @@ export default function AboutPage() {
             </h2>
             <div className="bg-gray-50 dark:bg-slate-900 rounded-lg p-6 border border-[#003049]/10 dark:border-slate-700">
               <p className="text-[#003049]/80 dark:text-gray-300 leading-relaxed">
-                Jadi gini, project ini lahir pas lagi gabut mudik lebaran Idul Fitri 2026 (1447H). 
-                Trigger utamanya? Pusing mikirin kapan waktu yang pas buat ambil cuti biar dapet long weekend maksimal. 
+                Jadi gini, project ini lahir pas lagi gabut mudik lebaran Idul Fitri 2026 (1447H).
+                Trigger utamanya? Pusing mikirin kapan waktu yang pas buat ambil cuti biar dapet long weekend maksimal.
                 Jadinya ya bikin aja tool yang bisa bantu planning liburan dengan lebih proper.
               </p>
             </div>
@@ -83,10 +83,62 @@ export default function AboutPage() {
             </h2>
             <div className="bg-gray-50 dark:bg-slate-900 rounded-lg p-6 border border-[#003049]/10 dark:border-slate-700">
               <p className="text-[#003049]/80 dark:text-gray-300 leading-relaxed">
-                Simple, karena pas bikin web ini (2026) gue lagi stay di Papua Barat Daya. 
-                Plus, banyak libur fakultatif khusus daerah sini yang sering gak ke-track di kalender nasional — 
-                kayak HUT Provinsi Papua Barat Daya (22 Desember) dan beberapa hari libur keagamaan. 
+                Simple, karena pas bikin web ini (2026) gue lagi stay di Papua Barat Daya.
+                Plus, banyak libur fakultatif khusus daerah sini yang sering gak ke-track di kalender nasional —
+                kayak HUT Provinsi Papua Barat Daya (8 Desember) dan beberapa hari libur keagamaan.
                 Sayang kan kalau missed.
+              </p>
+            </div>
+          </section>
+
+          <section className="mb-10">
+            <h2 className="text-xl font-bold text-[#003049] dark:text-[#669bbc] flex items-center gap-2 mb-4">
+              <Info size={20} aria-hidden="true" />
+              Sumber Data dan Verifikasi
+            </h2>
+            <div className="bg-gray-50 dark:bg-slate-900 rounded-lg p-6 border border-[#003049]/10 dark:border-slate-700 space-y-4">
+              <p className="text-[#003049]/80 dark:text-gray-300 leading-relaxed">
+                Kalender disusun dari dokumen publik yang dicatat dalam aplikasi, termasuk
+                keputusan atau surat edaran hari libur nasional, cuti bersama, dan ketentuan
+                regional Papua Barat Daya. Tautan dokumen sumber ditampilkan pada daftar hari
+                libur agar pengunjung dapat memeriksa dasar setiap tanggal secara langsung.
+              </p>
+              <p className="text-[#003049]/80 dark:text-gray-300 leading-relaxed">
+                Data diperiksa kembali ketika ada dokumen baru, perubahan resmi, atau laporan
+                koreksi. Tidak ada jadwal pembaruan tetap dan hubungan antara tanggal dengan
+                dokumen tidak diubah secara otomatis. Jika dua sumber berbeda, dokumen yang
+                lebih baru dan paling spesifik terhadap wilayah menjadi bahan peninjauan sebelum
+                tampilan kalender diperbarui.
+              </p>
+            </div>
+          </section>
+
+          <section className="mb-10">
+            <h2 className="text-xl font-bold text-[#003049] dark:text-[#669bbc] flex items-center gap-2 mb-4">
+              <Github size={20} aria-hidden="true" />
+              Koreksi dan Batas Penggunaan
+            </h2>
+            <div className="bg-gray-50 dark:bg-slate-900 rounded-lg p-6 border border-[#003049]/10 dark:border-slate-700 space-y-4">
+              <p className="text-[#003049]/80 dark:text-gray-300 leading-relaxed">
+                Menemukan tanggal, nama hari libur, wilayah, atau tautan sumber yang keliru?
+                Laporkan melalui{' '}
+                <a
+                  href="https://github.com/rizkyyusfian/hari-libur-indo/issues"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-[#005f73] underline underline-offset-4 dark:text-[#8ecae6]"
+                >
+                  GitHub Issues
+                </a>{' '}
+                dengan menyertakan tahun, wilayah, bagian yang perlu diperbaiki, dan tautan
+                dokumen pendukung. Laporan ditinjau oleh pengelola proyek sebelum data publik
+                diubah.
+              </p>
+              <p className="text-[#003049]/80 dark:text-gray-300 leading-relaxed">
+                Situs ini merupakan alat perencanaan independen, bukan situs resmi pemerintah
+                dan bukan pengganti dokumen instansi penerbit. Untuk keputusan perjalanan,
+                layanan kantor, atau kewajiban kerja, selalu cocokkan kembali informasi dengan
+                dokumen sumber dan pengumuman instansi terkait.
               </p>
             </div>
           </section>
@@ -99,7 +151,7 @@ export default function AboutPage() {
             </h2>
             <div className="bg-gray-50 dark:bg-slate-900 rounded-lg p-6 border border-[#003049]/10 dark:border-slate-700">
               <p className="text-[#003049]/80 dark:text-gray-300 leading-relaxed">
-                Project ini 95% vibe coding sambil nunggu buka puasa, 5% sisanya buat polishing doang. 
+                Project ini 95% vibe coding sambil nunggu buka puasa, 5% sisanya buat polishing doang.
                 Built with modern tech stack:
               </p>
               <ul className="text-[#003049]/80 dark:text-gray-300 mt-2 space-y-1">
@@ -108,10 +160,10 @@ export default function AboutPage() {
                 <li>• Tailwind CSS v4</li>
                 <li>• Neon Postgres + Cloudflare R2</li>
               </ul>
-              
+
               <div className="border-t border-[#003049]/10 dark:border-slate-700 mt-6 pt-6">
                 <p className="text-[#003049]/80 dark:text-gray-300 leading-relaxed">
-                  Made by <strong>Rizky Yusfian</strong> — Software Engineer yang lagi pivoting ke DevOps & networking 
+                  Made by <strong>Rizky Yusfian</strong> — Software Engineer yang lagi pivoting ke DevOps & networking
                   karena AI makin jago ngoding. Adaptasi atau punah, kan?
                 </p>
               </div>
@@ -127,7 +179,7 @@ export default function AboutPage() {
                   GitHub Repo
                 </a>
                 <a
-                  href="https://rizkyyusfian.dev"
+                  href="https://rizkyyusfian.tech"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-4 py-2 border border-[#003049]/20 dark:border-slate-600 text-[#003049] dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition"
@@ -146,8 +198,8 @@ export default function AboutPage() {
         <div className="max-w-3xl mx-auto px-4 py-8">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-[#003049]/70 dark:text-gray-400">
             <div className="flex items-center gap-4">
-              <Link 
-                href="/" 
+              <Link
+                href="/"
                 className="flex items-center gap-1 hover:text-[#c1121f] dark:hover:text-[#669bbc] transition"
               >
                 <Info size={14} />
@@ -158,7 +210,7 @@ export default function AboutPage() {
               <p>Hari Libur Indonesia - Papua Barat Daya</p>
             </div>
             <a
-              href="https://rizkyyusfian.dev"
+              href="https://rizkyyusfian.tech"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 hover:text-[#c1121f] dark:hover:text-[#669bbc] transition"
