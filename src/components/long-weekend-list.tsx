@@ -130,8 +130,8 @@ export function LongWeekendList({
             aria-pressed={includeFridayInLongWeekend}
             className={`focus-ring surface-transition min-h-11 rounded-xl border px-3 py-2 text-xs font-bold min-[520px]:ml-auto ${
               includeFridayInLongWeekend
-                ? 'border-info bg-info-soft text-info'
-                : 'border-line bg-surface text-muted hover:border-info hover:text-info'
+                ? 'border-accent bg-accent text-ink'
+                : 'border-line bg-surface text-muted hover:border-accent hover:text-foreground'
             }`}
           >
             Hitung Hari Jumat: {includeFridayInLongWeekend ? 'Aktif' : 'Nonaktif'}
@@ -155,7 +155,7 @@ export function LongWeekendList({
         <div className="flex items-center gap-2">
           <span className="grid size-9 place-items-center rounded-xl bg-info-soft text-info"><Calendar size={18} aria-hidden="true" /></span>
           <div>
-            <p className="text-[11px] font-extrabold uppercase tracking-[0.13em] text-primary">Waktu Rehat</p>
+            <p className="text-[11px] font-extrabold uppercase tracking-[0.13em] text-muted">Waktu Rehat</p>
             <h2 id="long-weekend-title" className="font-extrabold tracking-[-0.025em] text-foreground">
               Long Weekend <span className="text-muted">({longWeekends.length})</span>
             </h2>
@@ -167,8 +167,8 @@ export function LongWeekendList({
           aria-pressed={includeFridayInLongWeekend}
           className={`focus-ring surface-transition min-h-11 rounded-xl border px-3 py-2 text-xs font-bold min-[520px]:ml-auto ${
             includeFridayInLongWeekend
-              ? 'border-info bg-info-soft text-info'
-              : 'border-line bg-surface text-muted hover:border-info hover:text-info'
+              ? 'border-accent bg-accent text-ink'
+              : 'border-line bg-surface text-muted hover:border-accent hover:text-foreground'
           }`}
         >
           Hitung Hari Jumat: {includeFridayInLongWeekend ? 'Aktif' : 'Nonaktif'}
@@ -183,12 +183,12 @@ export function LongWeekendList({
           return (
             <article key={idx} className={`overflow-hidden rounded-2xl border ${idx === 0 ? 'border-primary/35 shadow-[3px_4px_0_var(--line)]' : 'border-line'}`}>
               {/* Header */}
-              <div className={`${idx === 0 ? 'bg-[#10243e] text-white dark:bg-[#202022]' : 'bg-surface-subtle text-foreground'} px-4 py-3`}>
+              <div className="bg-panel-inverse px-4 py-3 text-white">
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-extrabold capitalize">
                     {monthYear}
                   </span>
-                  <span className="rounded-lg bg-accent px-2.5 py-1 text-xs font-extrabold text-[#10243e]">
+                  <span className="px-2.5 py-1 text-xs font-extrabold text-inherit">
                     {lw.length} hari
                   </span>
                 </div>

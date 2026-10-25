@@ -44,7 +44,9 @@ export function ExportControls({ calendarElementId = 'calendar-export' }: Export
   return (
     <section className="rounded-2xl border border-line bg-surface p-4" aria-labelledby="export-title">
       <div className="mb-4 flex items-center gap-2">
-        <Download size={18} className="text-primary" aria-hidden="true" />
+        <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-info text-white dark:text-ink">
+          <Download size={16} aria-hidden="true" />
+        </span>
         <h2 id="export-title" className="font-extrabold text-foreground">Simpan Kalender</h2>
       </div>
 

@@ -19,12 +19,19 @@ export function SummaryCard({ holidays }: SummaryCardProps) {
 
   return (
     <section className="overflow-hidden rounded-2xl border border-line bg-surface pop-shadow" aria-labelledby="today-summary-title">
-      <div className="flex items-start justify-between gap-4 p-5">
+      <div className="flex items-center gap-3 p-5">
+        <div className={`grid size-8 shrink-0 place-items-center rounded-lg ${
+          todayHoliday || isWeekend
+            ? 'bg-primary/12 text-primary'
+            : 'bg-info-soft text-info'
+        }`}>
+          <CalendarDays size={16} aria-hidden="true" />
+        </div>
         <div className="min-w-0">
-          <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-primary">
+          <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-muted">
             Hari Ini
           </p>
-          <h2 id="today-summary-title" className="mt-2 text-pretty text-xl font-extrabold leading-tight tracking-[-0.035em] text-foreground">
+          <h2 id="today-summary-title" className="mt-1 text-pretty text-xl font-extrabold leading-tight tracking-[-0.035em] text-foreground">
             {todayHoliday 
               ? todayHoliday.name 
               : isWeekend 
@@ -40,13 +47,6 @@ export function SummaryCard({ holidays }: SummaryCardProps) {
               {todayHoliday.isCutiBersama ? 'Cuti Bersama' : todayHoliday.type === 'national' ? 'Libur Nasional' : 'Libur Regional'}
             </span>
           )}
-        </div>
-        <div className={`grid size-12 shrink-0 place-items-center rounded-xl ${
-          todayHoliday || isWeekend 
-            ? 'bg-primary/12 text-primary' 
-            : 'bg-info-soft text-info'
-        }`}>
-          <CalendarDays size={24} aria-hidden="true" />
         </div>
       </div>
 

@@ -256,7 +256,7 @@ export function Calendar({
   return (
     <section id="calendar-export" className="relative overflow-hidden rounded-2xl border border-line bg-surface p-4 shadow-[0_18px_45px_rgba(16,36,62,0.08)]">
       {/* Header */}
-      <div className="-mx-4 -mt-4 mb-5 flex flex-col gap-4 bg-[#10243e] p-4 text-white dark:bg-[#202022] sm:flex-row sm:items-center sm:justify-between sm:p-5">
+      <div className="-mx-4 -mt-4 mb-5 flex flex-col gap-4 bg-panel-inverse p-4 text-white sm:flex-row sm:items-center sm:justify-between sm:p-5">
         <div className="flex items-center gap-2">
           <h2 className="text-xl font-extrabold capitalize tracking-[-0.035em] text-white sm:text-2xl">
             {viewMode === 'month' 
@@ -272,7 +272,7 @@ export function Calendar({
             aria-label={`${showWFHFriday ? 'Sembunyikan' : 'Tampilkan'} WFH setiap Jumat`}
             className={`focus-ring surface-transition min-h-11 rounded-xl border px-3 py-2 text-xs font-bold ${
               showWFHFriday
-                ? 'border-accent bg-accent text-[#10243e]'
+                ? 'border-accent bg-accent text-ink'
                 : 'border-white/20 bg-white/10 text-white hover:bg-white/20'
             }`}
             title="Tampilkan WFH setiap Jumat"
@@ -294,7 +294,7 @@ export function Calendar({
               onClick={() => onViewModeChange('month')}
               aria-label="Gunakan tampilan bulanan"
               aria-pressed={viewMode === 'month'}
-              className={`focus-ring surface-transition inline-flex size-11 items-center justify-center rounded-lg ${viewMode === 'month' ? 'bg-white text-[#10243e] shadow-sm' : 'text-white hover:bg-white/15'}`}
+              className={`focus-ring surface-transition inline-flex size-11 items-center justify-center rounded-lg ${viewMode === 'month' ? 'bg-white text-ink shadow-sm' : 'text-white hover:bg-white/15'}`}
               title="Tampilan Bulanan"
             >
               <CalendarIcon size={17} aria-hidden="true" />
@@ -304,7 +304,7 @@ export function Calendar({
               onClick={() => onViewModeChange('year')}
               aria-label="Gunakan tampilan tahunan"
               aria-pressed={viewMode === 'year'}
-              className={`focus-ring surface-transition inline-flex size-11 items-center justify-center rounded-lg ${viewMode === 'year' ? 'bg-white text-[#10243e] shadow-sm' : 'text-white hover:bg-white/15'}`}
+              className={`focus-ring surface-transition inline-flex size-11 items-center justify-center rounded-lg ${viewMode === 'year' ? 'bg-white text-ink shadow-sm' : 'text-white hover:bg-white/15'}`}
               title="Tampilan Tahunan"
             >
               <CalendarDays size={17} aria-hidden="true" />

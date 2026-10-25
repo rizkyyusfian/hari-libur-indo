@@ -12,7 +12,7 @@ export function Header() {
       </a>
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
         <Link href="/" className="focus-ring group flex min-w-0 items-center gap-3 rounded-xl">
-          <span className="surface-transition grid size-11 shrink-0 -rotate-3 place-items-center rounded-xl bg-primary text-sm font-black tabular-nums text-white shadow-[3px_3px_0_#10243e] group-hover:rotate-0 dark:shadow-[3px_3px_0_#ffe25c]">
+          <span className="surface-transition grid size-11 shrink-0 -rotate-3 place-items-center rounded-xl bg-primary text-sm font-black tabular-nums text-white shadow-[3px_3px_0_var(--ink)] group-hover:rotate-0 dark:shadow-[3px_3px_0_var(--accent)]">
             17
           </span>
           <span className="min-w-0">

@@ -43,7 +43,7 @@ export default function AboutPage() {
             <div className="absolute -right-10 -top-12 size-32 rotate-12 rounded-3xl bg-primary/15" aria-hidden="true" />
             <div className="absolute -bottom-16 right-16 size-28 rounded-full bg-accent/75" aria-hidden="true" />
             <div className="relative max-w-3xl">
-              <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-primary">Tentang Proyek</p>
+              <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-muted">Tentang Proyek</p>
               <h1 className="mt-3 text-balance text-3xl font-extrabold leading-[1.08] tracking-[-0.045em] sm:text-5xl">
                 Kalender publik yang dibuat untuk <span className="text-info">rencana nyata.</span>
               </h1>
@@ -81,14 +81,14 @@ export default function AboutPage() {
             </section>
           </div>
 
-          <section className="mt-5 overflow-hidden rounded-2xl border border-[#d5b92b] bg-accent text-[#10243e]" aria-labelledby="pbd-title">
+          <section className="mt-5 overflow-hidden rounded-2xl border border-[#d5b92b] bg-accent text-ink" aria-labelledby="pbd-title">
             <div className="grid gap-5 p-5 sm:p-7 md:grid-cols-[auto_1fr] md:items-start">
-              <span className="grid size-12 place-items-center rounded-xl bg-[#10243e] text-white">
+              <span className="grid size-12 place-items-center rounded-xl bg-ink text-white">
                 <MapPin size={22} aria-hidden="true" />
               </span>
               <div>
                 <h2 id="pbd-title" className="text-xl font-extrabold tracking-[-0.035em]">Kenapa Papua Barat Daya?</h2>
-                <p className="mt-3 text-sm leading-7 text-[#10243e]/80 sm:text-base">
+                <p className="mt-3 text-sm leading-7 text-ink/80 sm:text-base">
                   Simple, karena pas bikin web ini (2026) gue lagi stay di Papua Barat Daya. Plus, banyak libur fakultatif khusus daerah sini yang sering gak ke-track di kalender nasional — kayak HUT Provinsi Papua Barat Daya (8 Desember) dan beberapa hari libur keagamaan. Sayang kan kalau missed.
                 </p>
               </div>
@@ -135,7 +135,7 @@ export default function AboutPage() {
             </div>
           </section>
 
-          <section className="mt-5 overflow-hidden rounded-2xl border border-line bg-[#10243e] text-white dark:bg-[#202022]" aria-labelledby="open-source-title">
+          <section className="mt-5 overflow-hidden rounded-2xl border border-line bg-panel-inverse text-white" aria-labelledby="open-source-title">
             <div className="p-5 sm:p-7">
               <h2 id="open-source-title" className="flex items-center gap-2 text-xl font-extrabold tracking-[-0.035em]">
                 <Code size={20} className="text-accent" aria-hidden="true" />

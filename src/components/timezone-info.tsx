@@ -29,10 +29,10 @@ export function TimezoneInfo() {
   return (
     <section className="rounded-2xl border border-line bg-surface p-4 pop-shadow" aria-labelledby="timezone-title">
       <div className="mb-2 flex items-center gap-2">
-        <span className="grid size-8 place-items-center rounded-lg bg-info text-white">
+        <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-info text-white dark:text-ink">
           <Clock size={16} aria-hidden="true" />
         </span>
-        <p id="timezone-title" className="text-xs font-extrabold uppercase tracking-[0.12em] text-info">Zona Waktu Anda</p>
+        <h2 id="timezone-title" className="font-extrabold text-foreground">Zona Waktu Anda</h2>
       </div>
       <p className="font-mono text-sm font-bold tabular-nums text-foreground">
         {time}
