@@ -14,15 +14,15 @@ export function ThemeToggle({ className = '' }: { className?: string }) {
       type="button"
       onClick={() => setTheme(isDark ? 'light' : 'dark')}
       disabled={!mounted}
-      className={`inline-flex size-11 items-center justify-center rounded-lg transition hover:bg-[#669bbc]/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#669bbc] focus-visible:ring-offset-2 disabled:cursor-wait dark:hover:bg-slate-800 dark:focus-visible:ring-offset-slate-900 ${className}`}
+      className={`focus-ring surface-transition inline-flex size-11 items-center justify-center rounded-xl border border-line bg-surface text-foreground hover:-translate-y-0.5 hover:border-info hover:bg-info-soft disabled:cursor-wait disabled:opacity-60 ${className}`}
       aria-label={isDark ? 'Gunakan tema terang' : 'Gunakan tema gelap'}
     >
       {!mounted ? (
         <span className="size-5" aria-hidden="true" />
       ) : isDark ? (
-        <Sun size={20} className="text-yellow-400" aria-hidden="true" />
+        <Sun size={20} className="text-accent" aria-hidden="true" />
       ) : (
-        <Moon size={20} className="text-[#003049]" aria-hidden="true" />
+        <Moon size={20} className="text-foreground" aria-hidden="true" />
       )}
     </button>
   );

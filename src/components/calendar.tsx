@@ -54,17 +54,17 @@ export function Calendar({
           href={href}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 bg-[#003049]/10 dark:bg-[#669bbc]/20 text-[#003049] dark:text-[#669bbc] rounded font-medium hover:bg-[#003049]/20 dark:hover:bg-[#669bbc]/30 transition"
+          className="focus-ring surface-transition inline-flex items-center gap-1 rounded-md bg-info-soft px-2 py-1 text-[11px] font-bold text-info hover:bg-info/20"
           title={title}
         >
           {label}
-          <ExternalLink size={8} />
+          <ExternalLink size={11} aria-hidden="true" />
         </a>
       );
     }
 
     return (
-      <span className="text-[10px] px-1.5 py-0.5 bg-[#003049]/10 dark:bg-[#669bbc]/20 text-[#003049] dark:text-[#669bbc] rounded font-medium">
+      <span className="rounded-md bg-info-soft px-2 py-1 text-[11px] font-bold text-info">
         {label}
       </span>
     );
@@ -109,32 +109,35 @@ export function Calendar({
     const fridayWFH = showWFHFriday && date.getDay() === 5;
     const isToday = date.toDateString() === today.toDateString();
 
-    let bgClass = 'bg-white dark:bg-slate-800';
-    let textClass = 'text-[#003049] dark:text-gray-100';
-    let borderClass = 'border border-transparent';
+    let bgClass = 'bg-surface';
+    let textClass = 'text-foreground';
+    let borderClass = 'border border-line/65';
 
     if (isToday) {
-      bgClass = 'bg-[#003049] dark:bg-[#669bbc]';
-      textClass = 'text-white font-bold';
+      bgClass = 'bg-info';
+      textClass = 'text-white font-extrabold';
+      borderClass = 'border border-white/70 ring-2 ring-info/30';
     } else if (holiday) {
       if (holiday.isCutiBersama) {
         // Cuti Bersama - lighter/faded red
-        bgClass = 'bg-[#c1121f]/20 dark:bg-[#c1121f]/30';
-        textClass = 'text-[#c1121f] font-medium';
+        bgClass = 'bg-primary/12';
+        textClass = 'text-primary font-extrabold';
+        borderClass = 'border border-primary/35 border-dashed';
       } else {
         // Regular holiday - darker red
-        bgClass = 'bg-[#c1121f] dark:bg-[#c1121f]';
-        textClass = 'text-white font-semibold';
+        bgClass = 'bg-primary';
+        textClass = 'text-white font-extrabold';
+        borderClass = 'border border-primary';
       }
     } else if (weekend) {
       // Weekend - red font only (no border)
-      bgClass = 'bg-white dark:bg-slate-800';
-      textClass = 'text-[#c1121f] dark:text-[#ff8a95]';
-      borderClass = 'border border-transparent';
+      bgClass = 'bg-surface-subtle';
+      textClass = 'text-primary font-bold';
+      borderClass = 'border border-line/65';
     } else if (fridayWFH) {
-      bgClass = 'bg-[#669bbc]/15 dark:bg-[#669bbc]/20';
-      textClass = 'text-[#003049] dark:text-[#669bbc] font-medium';
-      borderClass = 'border border-[#669bbc]/50';
+      bgClass = 'bg-info-soft';
+      textClass = 'text-info font-bold';
+      borderClass = 'border border-info/40';
     }
 
     return { bgClass, textClass, borderClass };
@@ -177,7 +180,7 @@ export function Calendar({
     return (
       <div className={compact ? '' : ''}>
         {compact && (
-          <h4 className="text-sm font-semibold text-[#003049] dark:text-gray-100 mb-2 text-center">
+          <h4 className="mb-2 text-center text-sm font-extrabold capitalize text-foreground">
             {monthName}
           </h4>
         )}
@@ -191,7 +194,7 @@ export function Calendar({
               <div
                 key={day}
                 role="columnheader"
-                className={`text-center font-semibold text-[#405c68] dark:text-gray-300 ${compact ? 'text-[10px] py-1' : 'text-xs py-2'}`}
+                className={`text-center font-extrabold uppercase tracking-wide text-muted ${compact ? 'py-1 text-[10px]' : 'py-2 text-[11px] sm:text-xs'}`}
               >
                 {compact ? day.charAt(0) : day}
               </div>
@@ -219,7 +222,7 @@ export function Calendar({
                     type="button"
                     key={formatDateISO(date)}
                     role="gridcell"
-                    className={`${compact ? 'aspect-square text-[10px]' : 'aspect-square text-sm'} flex items-center justify-center rounded ${bgClass} ${textClass} ${borderClass} cursor-pointer transition hover:ring-2 hover:ring-[#669bbc]/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#003049] dark:focus-visible:ring-[#8ecae6]`}
+                    className={`${compact ? 'aspect-square text-[11px]' : 'aspect-square text-xs sm:text-sm'} focus-ring surface-transition flex cursor-pointer items-center justify-center rounded-lg ${bgClass} ${textClass} ${borderClass} hover:-translate-y-0.5 hover:border-info hover:shadow-sm`}
                     onMouseEnter={(event) => showDatePopover(date, event.currentTarget)}
                     onMouseLeave={handleMouseLeave}
                     onFocus={(event) => showDatePopover(date, event.currentTarget)}
@@ -251,60 +254,60 @@ export function Calendar({
   }).sort((a, b) => a.date.getTime() - b.date.getTime());
 
   return (
-    <div id="calendar-export" className="bg-white dark:bg-slate-900 rounded-lg border border-[#003049]/10 dark:border-slate-700 p-4 shadow-sm relative">
+    <section id="calendar-export" className="relative overflow-hidden rounded-2xl border border-line bg-surface p-4 shadow-[0_18px_45px_rgba(16,36,62,0.08)]">
       {/* Header */}
-      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="-mx-4 -mt-4 mb-5 flex flex-col gap-4 bg-[#10243e] p-4 text-white dark:bg-[#202022] sm:flex-row sm:items-center sm:justify-between sm:p-5">
         <div className="flex items-center gap-2">
-          <h2 className="text-lg font-semibold text-[#003049] dark:text-gray-100 capitalize">
+          <h2 className="text-xl font-extrabold capitalize tracking-[-0.035em] text-white sm:text-2xl">
             {viewMode === 'month' 
               ? focusDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
               : focusDate.getFullYear()}
           </h2>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="grid grid-cols-2 gap-2 min-[460px]:flex min-[460px]:flex-wrap min-[460px]:items-center sm:justify-end">
           <button
             type="button"
             onClick={() => onShowWFHFridayChange(!showWFHFriday)}
             aria-pressed={showWFHFriday}
             aria-label={`${showWFHFriday ? 'Sembunyikan' : 'Tampilkan'} WFH setiap Jumat`}
-            className={`min-h-11 px-3 py-2 text-xs rounded-md border transition ${
+            className={`focus-ring surface-transition min-h-11 rounded-xl border px-3 py-2 text-xs font-bold ${
               showWFHFriday
-                ? 'bg-[#669bbc]/20 border-[#669bbc]/50 text-[#003049] dark:text-[#669bbc]'
-                : 'bg-white dark:bg-slate-800 border-[#003049]/20 dark:border-slate-700 text-[#003049]/70 dark:text-gray-300'
+                ? 'border-accent bg-accent text-[#10243e]'
+                : 'border-white/20 bg-white/10 text-white hover:bg-white/20'
             }`}
             title="Tampilkan WFH setiap Jumat"
           >
-            WFH Jumat: {showWFHFriday ? 'On' : 'Off'}
+            WFH Jumat: {showWFHFriday ? 'Aktif' : 'Nonaktif'}
           </button>
           <button
             type="button"
             onClick={backToToday}
-            className="min-h-11 px-3 py-2 text-xs rounded-md border border-[#003049]/20 dark:border-slate-700 text-[#003049] dark:text-gray-100 hover:bg-[#669bbc]/20 dark:hover:bg-slate-800 transition"
+            className="focus-ring surface-transition min-h-11 rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-xs font-bold text-white hover:bg-white/20"
             title="Kembali ke tanggal hari ini"
           >
             Hari Ini
           </button>
           {/* View toggle */}
-          <div className="flex bg-gray-100 dark:bg-slate-800 rounded-lg p-1">
+          <div className="col-span-2 flex rounded-xl bg-black/20 p-1 min-[460px]:col-span-1">
             <button
               type="button"
               onClick={() => onViewModeChange('month')}
               aria-label="Gunakan tampilan bulanan"
               aria-pressed={viewMode === 'month'}
-              className={`inline-flex size-11 items-center justify-center rounded ${viewMode === 'month' ? 'bg-white dark:bg-slate-700 shadow-sm' : ''}`}
+              className={`focus-ring surface-transition inline-flex size-11 items-center justify-center rounded-lg ${viewMode === 'month' ? 'bg-white text-[#10243e] shadow-sm' : 'text-white hover:bg-white/15'}`}
               title="Tampilan Bulanan"
             >
-              <CalendarIcon size={16} className="text-[#003049] dark:text-gray-300" />
+              <CalendarIcon size={17} aria-hidden="true" />
             </button>
             <button
               type="button"
               onClick={() => onViewModeChange('year')}
               aria-label="Gunakan tampilan tahunan"
               aria-pressed={viewMode === 'year'}
-              className={`inline-flex size-11 items-center justify-center rounded ${viewMode === 'year' ? 'bg-white dark:bg-slate-700 shadow-sm' : ''}`}
+              className={`focus-ring surface-transition inline-flex size-11 items-center justify-center rounded-lg ${viewMode === 'year' ? 'bg-white text-[#10243e] shadow-sm' : 'text-white hover:bg-white/15'}`}
               title="Tampilan Tahunan"
             >
-              <CalendarDays size={16} className="text-[#003049] dark:text-gray-300" />
+              <CalendarDays size={17} aria-hidden="true" />
             </button>
           </div>
           {/* Navigation */}
@@ -312,17 +315,17 @@ export function Calendar({
             type="button"
             onClick={viewMode === 'month' ? prevMonth : prevYear} 
             aria-label={viewMode === 'month' ? 'Bulan sebelumnya' : 'Tahun sebelumnya'}
-            className="inline-flex size-11 items-center justify-center hover:bg-[#669bbc]/20 dark:hover:bg-slate-800 rounded-lg transition text-[#003049] dark:text-gray-100"
+            className="focus-ring surface-transition inline-flex size-11 items-center justify-center rounded-xl border border-white/20 bg-white/10 text-white hover:bg-white/20"
           >
-            <ChevronLeft size={20} />
+            <ChevronLeft size={20} aria-hidden="true" />
           </button>
           <button 
             type="button"
             onClick={viewMode === 'month' ? nextMonth : nextYear} 
             aria-label={viewMode === 'month' ? 'Bulan berikutnya' : 'Tahun berikutnya'}
-            className="inline-flex size-11 items-center justify-center hover:bg-[#669bbc]/20 dark:hover:bg-slate-800 rounded-lg transition text-[#003049] dark:text-gray-100"
+            className="focus-ring surface-transition inline-flex size-11 items-center justify-center rounded-xl border border-white/20 bg-white/10 text-white hover:bg-white/20"
           >
-            <ChevronRight size={20} />
+            <ChevronRight size={20} aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -333,43 +336,43 @@ export function Calendar({
           {renderMonth(focusDate)}
           
           {/* Legend */}
-          <div className="flex flex-wrap gap-4 mt-4 pt-4 border-t border-[#003049]/10 dark:border-slate-700">
-            <div className="flex items-center gap-2 text-xs">
-              <div className="w-4 h-4 rounded bg-[#c1121f]" />
-              <span className="text-[#003049] dark:text-gray-400">Libur</span>
+          <div className="mt-5 flex flex-wrap gap-x-4 gap-y-3 border-t border-line pt-4">
+            <div className="flex items-center gap-2 text-xs font-semibold text-muted">
+              <div className="size-4 rounded-md bg-primary" aria-hidden="true" />
+              <span>Libur</span>
             </div>
             <div className="flex items-center gap-2 text-xs">
-              <div className="w-4 h-4 rounded bg-[#c1121f]/20" />
-              <span className="text-[#003049] dark:text-gray-400">Cuti Bersama</span>
+              <div className="size-4 rounded-md border border-dashed border-primary/50 bg-primary/12" aria-hidden="true" />
+              <span className="text-muted">Cuti Bersama</span>
             </div>
             <div className="flex items-center gap-2 text-xs">
-              <div className="w-4 h-4 rounded border-2 border-[#c1121f]/50 bg-white dark:bg-slate-800" />
-              <span className="text-[#003049] dark:text-gray-400">Akhir Pekan</span>
+              <div className="size-4 rounded-md border border-line bg-surface-subtle" aria-hidden="true" />
+              <span className="text-muted">Akhir Pekan</span>
             </div>
             <div className="flex items-center gap-2 text-xs">
-              <div className="w-4 h-4 rounded bg-[#003049] dark:bg-[#669bbc]" />
-              <span className="text-[#003049] dark:text-gray-400">Hari Ini</span>
+              <div className="size-4 rounded-md bg-info ring-2 ring-info/25" aria-hidden="true" />
+              <span className="text-muted">Hari Ini</span>
             </div>
           </div>
 
           {/* Month Holidays List */}
           {monthHolidays.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-[#003049]/10 dark:border-slate-700">
-              <h3 className="text-sm font-semibold text-[#003049] dark:text-gray-100 mb-3">
+            <div className="mt-5 border-t border-line pt-5">
+              <h3 className="mb-3 text-sm font-extrabold text-foreground">
                 Hari Libur Bulan Ini ({monthHolidays.length})
               </h3>
               <div className="space-y-2">
                 {monthHolidays.map((holiday, idx) => (
                   <div 
                     key={idx}
-                    className={`flex items-center gap-3 p-2 rounded-lg border ${
+                    className={`flex items-center gap-3 rounded-xl border p-3 ${
                       holiday.isCutiBersama 
-                        ? 'bg-[#c1121f]/10 border-[#c1121f]/20' 
-                        : 'bg-[#c1121f]/5 border-[#c1121f]/30'
+                        ? 'border-primary/25 bg-primary/8' 
+                        : 'border-primary/25 bg-surface-subtle'
                     }`}
                   >
-                    <div className={`flex-shrink-0 w-10 h-10 rounded-lg flex flex-col items-center justify-center ${
-                      holiday.isCutiBersama ? 'bg-[#c1121f]/30 text-[#c1121f]' : 'bg-[#c1121f] text-white'
+                    <div className={`flex size-11 shrink-0 flex-col items-center justify-center rounded-xl ${
+                      holiday.isCutiBersama ? 'border border-dashed border-primary/40 bg-primary/12 text-primary' : 'bg-primary text-white'
                     }`}>
                       <span className="text-xs font-medium leading-none">
                         {holiday.date.toLocaleDateString('id-ID', { weekday: 'short' })}
@@ -379,13 +382,13 @@ export function Calendar({
                       </span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium text-[#003049] dark:text-gray-100 truncate">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="min-w-0 break-words text-sm font-bold text-foreground">
                           {holiday.name}
                         </p>
                         <PBDBadge holiday={holiday} />
                       </div>
-                      <p className="text-xs text-[#003049]/60 dark:text-gray-400">
+                      <p className="mt-1 text-xs font-medium text-muted">
                         {formatDateIndonesian(holiday.date)}
                         {holiday.isCutiBersama && ' • Cuti Bersama'}
                       </p>
@@ -397,19 +400,20 @@ export function Calendar({
           )}
 
           {monthHolidays.length === 0 && (
-            <div className="mt-4 pt-4 border-t border-[#003049]/10 dark:border-slate-700">
-              <p className="text-sm text-[#003049]/60 dark:text-gray-400 text-center py-2">
-                Tidak ada hari libur di bulan ini
-              </p>
+            <div className="mt-5 border-t border-line pt-5">
+              <div className="rounded-xl bg-info-soft px-4 py-5 text-center">
+                <p className="text-sm font-bold text-foreground">Bulan ini tidak memiliki hari libur tercatat.</p>
+                <p className="mt-1 text-xs leading-relaxed text-muted">Data berhasil dimuat. Coba bulan lain untuk melihat jadwal berikutnya.</p>
+              </div>
             </div>
           )}
         </>
       ) : (
         /* Yearly View - 4x3 grid */
         <>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
             {Array.from({ length: 12 }, (_, i) => (
-              <div key={i} className="border border-[#003049]/10 dark:border-slate-700 rounded-lg p-2">
+              <div key={i} className="rounded-xl border border-line bg-surface-subtle/45 p-3">
                 {renderMonth(new Date(focusDate.getFullYear(), i, 1), true)}
               </div>
             ))}
@@ -417,37 +421,37 @@ export function Calendar({
 
           {/* Yearly Holiday List */}
           {yearHolidays.length > 0 && (
-            <div className="mt-6 pt-4 border-t border-[#003049]/10 dark:border-slate-700">
-              <h3 className="text-sm font-semibold text-[#003049] dark:text-gray-100 mb-3">
+            <div className="mt-6 border-t border-line pt-5">
+              <h3 className="mb-3 text-sm font-extrabold text-foreground">
                 Daftar Hari Libur Tahun {focusDate.getFullYear()} ({yearHolidays.length})
               </h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
                 {yearHolidays.map((holiday, idx) => (
                   <div 
                     key={idx}
-                    className={`flex items-center gap-2 p-2 rounded-lg border ${
+                    className={`flex items-center gap-2 rounded-xl border p-2.5 ${
                       holiday.isCutiBersama 
-                        ? 'bg-[#c1121f]/10 border-[#c1121f]/20' 
-                        : 'bg-[#c1121f]/5 border-[#c1121f]/30'
+                        ? 'border-primary/25 bg-primary/8' 
+                        : 'border-line bg-surface-subtle/50'
                     }`}
                   >
                     <div className={`flex-shrink-0 w-8 h-8 rounded flex flex-col items-center justify-center text-xs ${
-                      holiday.isCutiBersama ? 'bg-[#c1121f]/30 text-[#c1121f]' : 'bg-[#c1121f] text-white'
+                      holiday.isCutiBersama ? 'bg-primary/15 text-primary' : 'bg-primary text-white'
                     }`}>
                       <span className="font-bold leading-none">
                         {holiday.date.getDate()}
                       </span>
-                      <span className="text-[10px] leading-none">
+                      <span className="text-[11px] leading-none">
                         {holiday.date.toLocaleDateString('id-ID', { month: 'short' }).slice(0, 3)}
                       </span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-[#003049] dark:text-gray-100 truncate">
+                      <p className="line-clamp-2 text-xs font-bold text-foreground">
                         {holiday.name}
                       </p>
                       <div className="flex items-center gap-1">
                         {holiday.isCutiBersama && (
-                          <span className="text-[10px] text-[#c1121f]">Cuti Bersama</span>
+                          <span className="text-[11px] font-semibold text-primary">Cuti Bersama</span>
                         )}
                         <PBDBadge holiday={holiday} />
                       </div>
@@ -463,14 +467,14 @@ export function Calendar({
       {/* Popover */}
       {hoveredDate && (
         <div 
-          className="fixed z-50 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-[#003049]/20 dark:border-slate-600 p-3 min-w-[200px] pointer-events-none"
+          className="pointer-events-none fixed z-50 min-w-[200px] max-w-[calc(100vw-2rem)] rounded-xl border border-line bg-surface p-3 shadow-xl"
           style={{
             left: `${popoverPosition.x}px`,
             top: `${popoverPosition.y + 8}px`,
             transform: 'translateX(-50%)'
           }}
         >
-          <p className="text-sm font-semibold text-[#003049] dark:text-gray-100">
+          <p className="text-sm font-extrabold text-foreground">
             {hoveredDate.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
           </p>
           {(() => {
@@ -479,7 +483,7 @@ export function Calendar({
             if (holiday) {
               return (
                 <div className="text-xs mt-1">
-                  <p className="text-[#c1121f]">
+                  <p className="text-primary">
                     {holiday.name}
                     {holiday.isCutiBersama && ' (Cuti Bersama)'}
                   </p>
@@ -489,15 +493,15 @@ export function Calendar({
                 </div>
               );
             } else if (weekend) {
-              return <p className="text-xs mt-1 text-[#003049]/60 dark:text-gray-400">Akhir Pekan</p>;
+              return <p className="mt-1 text-xs text-muted">Akhir Pekan</p>;
             } else if (showWFHFriday && hoveredDate.getDay() === 5) {
-              return <p className="text-xs mt-1 text-[#003049]/60 dark:text-gray-400">WFH Jumat</p>;
+              return <p className="mt-1 text-xs text-muted">WFH Jumat</p>;
             } else {
-              return <p className="text-xs mt-1 text-[#003049]/60 dark:text-gray-400">Hari Kerja</p>;
+              return <p className="mt-1 text-xs text-muted">Hari Kerja</p>;
             }
           })()}
         </div>
       )}
-    </div>
+    </section>
   );
 }

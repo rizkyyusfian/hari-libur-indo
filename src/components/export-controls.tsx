@@ -42,35 +42,40 @@ export function ExportControls({ calendarElementId = 'calendar-export' }: Export
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-lg border border-[#003049]/20 dark:border-slate-700 p-4 shadow-sm">
-      <div className="flex items-center gap-2 mb-4">
-        <Download size={18} className="text-[#003049] dark:text-[#669bbc]" />
-        <h3 className="font-semibold text-[#003049] dark:text-gray-100">Download</h3>
+    <section className="rounded-2xl border border-line bg-surface p-4" aria-labelledby="export-title">
+      <div className="mb-4 flex items-center gap-2">
+        <Download size={18} className="text-primary" aria-hidden="true" />
+        <h2 id="export-title" className="font-extrabold text-foreground">Simpan Kalender</h2>
       </div>
 
       <div className="grid grid-cols-2 gap-2">
         <button
           onClick={handleExportImage}
           disabled={isExporting}
-          className="flex min-h-11 items-center justify-center gap-2 px-3 py-2 rounded-lg bg-[#669bbc]/20 hover:bg-[#669bbc]/40 dark:bg-[#669bbc]/20 dark:hover:bg-[#669bbc]/30 text-[#003049] dark:text-[#669bbc] text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
+          className="focus-ring surface-transition flex min-h-11 items-center justify-center gap-2 rounded-xl border border-info/25 bg-info-soft px-3 py-2 text-sm font-bold text-info hover:-translate-y-0.5 hover:border-info disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {isExporting && exportType === 'image' ? <Loader2 className="animate-spin" size={16} /> : <ImageIcon size={16} />}
-          <span>Gambar</span>
+          {isExporting && exportType === 'image' ? <Loader2 className="animate-spin" size={16} aria-hidden="true" /> : <ImageIcon size={16} aria-hidden="true" />}
+          <span>Unduh PNG</span>
         </button>
 
         <button
           onClick={handleExportPDF}
           disabled={isExporting}
-          className="flex min-h-11 items-center justify-center gap-2 px-3 py-2 rounded-lg bg-[#c1121f]/10 hover:bg-[#c1121f]/20 dark:bg-[#c1121f]/20 dark:hover:bg-[#c1121f]/30 text-[#c1121f] dark:text-[#c1121f] text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
+          className="focus-ring surface-transition flex min-h-11 items-center justify-center gap-2 rounded-xl border border-primary/25 bg-primary/10 px-3 py-2 text-sm font-bold text-primary hover:-translate-y-0.5 hover:border-primary disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {isExporting && exportType === 'pdf' ? <Loader2 className="animate-spin" size={16} /> : <FileText size={16} />}
-          <span>PDF</span>
+          {isExporting && exportType === 'pdf' ? <Loader2 className="animate-spin" size={16} aria-hidden="true" /> : <FileText size={16} aria-hidden="true" />}
+          <span>Unduh PDF</span>
         </button>
       </div>
 
-      <p className="text-xs text-[#003049]/70 dark:text-gray-400 mt-3">
+      <p className="mt-3 text-xs leading-relaxed text-muted">
         Bagikan kalender dengan teman dan keluarga
       </p>
-    </div>
+      <p className="sr-only" role="status" aria-live="polite">
+        {isExporting
+          ? `Sedang menyiapkan ${exportType === 'image' ? 'PNG' : 'PDF'}…`
+          : 'Kalender siap diunduh.'}
+      </p>
+    </section>
   );
 }

@@ -100,17 +100,17 @@ export function LongWeekendList({
           href={href}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-0.5 text-[10px] px-1 py-0.5 bg-[#003049]/10 dark:bg-[#669bbc]/20 text-[#003049] dark:text-[#669bbc] rounded font-medium hover:bg-[#003049]/20 dark:hover:bg-[#669bbc]/30 transition"
+          className="focus-ring surface-transition inline-flex items-center gap-1 rounded-md bg-info-soft px-2 py-1 text-[11px] font-bold text-info hover:bg-info/20"
           title={title}
         >
           {label}
-          <ExternalLink size={8} />
+          <ExternalLink size={11} aria-hidden="true" />
         </a>
       );
     }
 
     return (
-      <span className="text-[10px] px-1 py-0.5 bg-[#003049]/10 dark:bg-[#669bbc]/20 text-[#003049] dark:text-[#669bbc] rounded font-medium">
+      <span className="rounded-md bg-info-soft px-2 py-1 text-[11px] font-bold text-info">
         {label}
       </span>
     );
@@ -118,104 +118,114 @@ export function LongWeekendList({
 
   if (longWeekends.length === 0) {
     return (
-      <div className="bg-white dark:bg-slate-900 rounded-lg border border-[#003049]/20 dark:border-slate-700 p-4 shadow-sm">
-        <div className="flex items-center gap-2 mb-4">
-          <Calendar size={18} className="text-[#669bbc]" />
-          <h3 className="font-semibold text-[#003049] dark:text-gray-100">Long Weekend</h3>
+      <section className="rounded-2xl border border-line bg-surface p-4 sm:p-5" aria-labelledby="long-weekend-empty-title">
+        <div className="mb-4 flex flex-col gap-3 min-[520px]:flex-row min-[520px]:items-center">
+          <div className="flex items-center gap-2">
+            <span className="grid size-9 place-items-center rounded-xl bg-info-soft text-info"><Calendar size={18} aria-hidden="true" /></span>
+            <h2 id="long-weekend-empty-title" className="font-extrabold tracking-[-0.025em] text-foreground">Long Weekend</h2>
+          </div>
           <button
             type="button"
             onClick={() => onIncludeFridayInLongWeekendChange(!includeFridayInLongWeekend)}
             aria-pressed={includeFridayInLongWeekend}
-            className={`ml-auto min-h-11 px-3 py-2 text-xs rounded-md border transition ${
+            className={`focus-ring surface-transition min-h-11 rounded-xl border px-3 py-2 text-xs font-bold min-[520px]:ml-auto ${
               includeFridayInLongWeekend
-                ? 'bg-[#669bbc]/20 border-[#669bbc]/50 text-[#003049] dark:text-[#669bbc]'
-                : 'bg-white dark:bg-slate-800 border-[#003049]/20 dark:border-slate-700 text-[#003049]/70 dark:text-gray-300'
+                ? 'border-info bg-info-soft text-info'
+                : 'border-line bg-surface text-muted hover:border-info hover:text-info'
             }`}
           >
             Hitung Hari Jumat: {includeFridayInLongWeekend ? 'Aktif' : 'Nonaktif'}
           </button>
         </div>
-        <p className="text-sm text-[#003049]/70 dark:text-gray-400 text-center py-8">
-          {viewMode === 'month'
-            ? 'Tidak ada long weekend di bulan ini'
-            : 'Tidak ada long weekend di tahun ini'}
-        </p>
-      </div>
+        <div className="rounded-xl bg-surface-subtle px-4 py-8 text-center">
+          <p className="text-sm font-bold text-foreground">
+            {viewMode === 'month'
+              ? 'Belum ada long weekend pada bulan ini.'
+              : 'Belum ada long weekend pada tahun ini.'}
+          </p>
+          <p className="mx-auto mt-2 max-w-md text-xs leading-relaxed text-muted">Coba periode lain atau aktifkan perhitungan hari Jumat untuk melihat kemungkinan waktu rehat yang lebih panjang.</p>
+        </div>
+      </section>
     );
   }
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-lg border border-[#003049]/20 dark:border-slate-700 p-4 shadow-sm">
-      <div className="flex items-center gap-2 mb-4">
-        <Calendar size={18} className="text-[#669bbc]" />
-        <h3 className="font-semibold text-[#003049] dark:text-gray-100">
-          Long Weekend ({longWeekends.length})
-        </h3>
+    <section className="rounded-2xl border border-line bg-surface p-4 sm:p-5" aria-labelledby="long-weekend-title">
+      <div className="mb-5 flex flex-col gap-3 min-[520px]:flex-row min-[520px]:items-center">
+        <div className="flex items-center gap-2">
+          <span className="grid size-9 place-items-center rounded-xl bg-info-soft text-info"><Calendar size={18} aria-hidden="true" /></span>
+          <div>
+            <p className="text-[11px] font-extrabold uppercase tracking-[0.13em] text-primary">Waktu Rehat</p>
+            <h2 id="long-weekend-title" className="font-extrabold tracking-[-0.025em] text-foreground">
+              Long Weekend <span className="text-muted">({longWeekends.length})</span>
+            </h2>
+          </div>
+        </div>
         <button
           type="button"
           onClick={() => onIncludeFridayInLongWeekendChange(!includeFridayInLongWeekend)}
           aria-pressed={includeFridayInLongWeekend}
-          className={`ml-auto min-h-11 px-3 py-2 text-xs rounded-md border transition ${
+          className={`focus-ring surface-transition min-h-11 rounded-xl border px-3 py-2 text-xs font-bold min-[520px]:ml-auto ${
             includeFridayInLongWeekend
-              ? 'bg-[#669bbc]/20 border-[#669bbc]/50 text-[#003049] dark:text-[#669bbc]'
-              : 'bg-white dark:bg-slate-800 border-[#003049]/20 dark:border-slate-700 text-[#003049]/70 dark:text-gray-300'
+              ? 'border-info bg-info-soft text-info'
+              : 'border-line bg-surface text-muted hover:border-info hover:text-info'
           }`}
         >
           Hitung Hari Jumat: {includeFridayInLongWeekend ? 'Aktif' : 'Nonaktif'}
         </button>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-4">
         {longWeekends.map((lw, idx) => {
           const days = getDaysInPeriod(lw.start, lw.end);
           const monthYear = lw.start.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
           
           return (
-            <div key={idx} className="border border-[#003049]/10 dark:border-slate-700 rounded-lg overflow-hidden">
+            <article key={idx} className={`overflow-hidden rounded-2xl border ${idx === 0 ? 'border-primary/35 shadow-[3px_4px_0_var(--line)]' : 'border-line'}`}>
               {/* Header */}
-              <div className="bg-[#003049] dark:bg-[#669bbc]/20 px-3 py-2">
+              <div className={`${idx === 0 ? 'bg-[#10243e] text-white dark:bg-[#202022]' : 'bg-surface-subtle text-foreground'} px-4 py-3`}>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm font-semibold text-white dark:text-[#669bbc]">
+                  <span className="text-sm font-extrabold capitalize">
                     {monthYear}
                   </span>
-                  <span className="text-xs bg-white dark:bg-slate-800 text-[#003049] dark:text-[#669bbc] px-2 py-1 rounded font-medium">
+                  <span className="rounded-lg bg-accent px-2.5 py-1 text-xs font-extrabold text-[#10243e]">
                     {lw.length} hari
                   </span>
                 </div>
               </div>
               
               {/* Table */}
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+              <div className="overflow-x-auto overscroll-x-contain">
+                <table className="w-full min-w-[520px] text-sm">
                   <thead>
-                    <tr className="bg-gray-50 dark:bg-slate-800">
-                      <th className="px-3 py-2 text-left text-xs font-semibold text-[#003049] dark:text-gray-300 w-28">Tanggal</th>
-                      <th className="px-3 py-2 text-left text-xs font-semibold text-[#003049] dark:text-gray-300 w-24">Hari</th>
-                      <th className="px-3 py-2 text-left text-xs font-semibold text-[#003049] dark:text-gray-300">Keterangan</th>
+                    <tr className="bg-surface-subtle">
+                      <th className="w-36 px-4 py-2.5 text-left text-xs font-extrabold text-muted">Tanggal</th>
+                      <th className="w-24 px-4 py-2.5 text-left text-xs font-extrabold text-muted">Hari</th>
+                      <th className="px-4 py-2.5 text-left text-xs font-extrabold text-muted">Keterangan</th>
                     </tr>
                   </thead>
                   <tbody>
                     {days.map((day, dayIdx) => (
                       <tr 
                         key={dayIdx} 
-                        className={`border-t border-[#003049]/10 dark:border-slate-700 ${
+                        className={`border-t border-line ${
                           isHoliday(day.date, holidays) 
-                            ? 'bg-[#c1121f]/5 dark:bg-[#c1121f]/10' 
+                            ? 'bg-primary/6' 
                             : ''
                         }`}
                       >
-                        <td className="px-3 py-2 text-[#003049] dark:text-gray-100">
+                        <td className="px-4 py-3 font-semibold tabular-nums text-foreground">
                           {formatDateIndonesian(day.date)}
                         </td>
-                        <td className="px-3 py-2 text-[#003049] dark:text-gray-100">
+                        <td className="px-4 py-3 text-foreground">
                           {day.dayName}
                         </td>
-                        <td className={`px-3 py-2 ${
+                        <td className={`px-4 py-3 ${
                           isHoliday(day.date, holidays) 
-                            ? 'text-[#c1121f] dark:text-[#ff8a95] font-medium'
-                            : 'text-[#003049]/70 dark:text-gray-400'
+                            ? 'font-bold text-primary'
+                            : 'text-muted'
                         }`}>
-                          <span className="flex items-center gap-1.5">
+                          <span className="flex items-center gap-1.5 break-words">
                             {day.info}
                             <PBDBadge day={day} />
                           </span>
@@ -225,14 +235,11 @@ export function LongWeekendList({
                   </tbody>
                 </table>
               </div>
-            </div>
+            </article>
           );
         })}
       </div>
 
-      <p className="text-xs text-[#003049]/60 dark:text-gray-500 mt-4 pt-4 border-t border-[#003049]/10 dark:border-slate-700">
-        Manfaatkan long weekend untuk istirahat atau liburan!
-      </p>
-    </div>
+    </section>
   );
 }

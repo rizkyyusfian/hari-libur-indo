@@ -1,7 +1,7 @@
 'use client';
 
 import { Holiday, LongWeekend, getNextOffPeriod } from '@/lib/date-utils';
-import { CalendarDays, Clock } from 'lucide-react';
+import { ArrowRight, CalendarDays, Clock } from 'lucide-react';
 
 interface SummaryCardProps {
   holidays: Holiday[];
@@ -18,79 +18,68 @@ export function SummaryCard({ holidays }: SummaryCardProps) {
   const remainingHolidays = holidays.filter(h => h.date > today).length;
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-lg border border-[#003049]/10 dark:border-slate-700 p-5 shadow-sm">
-      {/* Today's Status - Clean and prominent */}
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <p className="text-xs text-[#003049]/60 dark:text-gray-500 uppercase tracking-wide">
+    <section className="overflow-hidden rounded-2xl border border-line bg-surface pop-shadow" aria-labelledby="today-summary-title">
+      <div className="flex items-start justify-between gap-4 p-5">
+        <div className="min-w-0">
+          <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-primary">
             Hari Ini
           </p>
-          <p className="text-xl font-bold text-[#003049] dark:text-white mt-1">
+          <h2 id="today-summary-title" className="mt-2 text-pretty text-xl font-extrabold leading-tight tracking-[-0.035em] text-foreground">
             {todayHoliday 
               ? todayHoliday.name 
               : isWeekend 
                 ? 'Akhir Pekan' 
                 : 'Hari Kerja'}
-          </p>
+          </h2>
           {todayHoliday && (
-            <span className={`inline-block mt-1 px-2 py-0.5 text-xs rounded ${
+            <span className={`mt-2 inline-block rounded-md px-2 py-1 text-xs font-bold ${
               todayHoliday.isCutiBersama 
-                ? 'bg-[#c1121f]/20 text-[#c1121f]' 
-                : 'bg-[#003049]/10 text-[#003049] dark:bg-[#669bbc]/20 dark:text-[#669bbc]'
+                ? 'bg-primary/15 text-primary' 
+                : 'bg-info-soft text-info'
             }`}>
               {todayHoliday.isCutiBersama ? 'Cuti Bersama' : todayHoliday.type === 'national' ? 'Libur Nasional' : 'Libur Regional'}
             </span>
           )}
         </div>
-        <div className={`p-3 rounded-lg ${
+        <div className={`grid size-12 shrink-0 place-items-center rounded-xl ${
           todayHoliday || isWeekend 
-            ? 'bg-[#c1121f]/10 dark:bg-[#c1121f]/20' 
-            : 'bg-[#669bbc]/10 dark:bg-[#669bbc]/20'
+            ? 'bg-primary/12 text-primary' 
+            : 'bg-info-soft text-info'
         }`}>
-          <CalendarDays size={24} className={
-            todayHoliday || isWeekend 
-              ? 'text-[#c1121f]' 
-              : 'text-[#669bbc]'
-          } />
+          <CalendarDays size={24} aria-hidden="true" />
         </div>
       </div>
 
-      {/* Divider */}
-      <div className="border-t border-[#003049]/10 dark:border-slate-700 my-4" />
-
-      {/* Stats Row */}
-      <div className="grid grid-cols-2 gap-4">
-        {/* Next Holiday/Long Weekend */}
-        <div>
-          <p className="text-xs text-[#003049]/60 dark:text-gray-500">
+      <div className="grid grid-cols-2 border-t border-line">
+        <div className="min-w-0 border-r border-line p-4">
+          <p className="text-xs font-semibold text-muted">
             {nextOffPeriod?.type === 'long-weekend' ? 'Long Weekend' : 'Libur Berikutnya'}
           </p>
           {nextOffPeriod ? (
             <>
-              <p className="font-semibold text-[#003049] dark:text-white mt-1 text-sm leading-tight">
+              <p className="mt-2 line-clamp-2 text-sm font-bold leading-snug text-foreground">
                 {nextOffPeriod.type === 'long-weekend'
                   ? `${(nextOffDetails as LongWeekend).length} hari`
                   : (nextOffDetails as Holiday).name}
               </p>
-              <div className="flex items-center gap-1 mt-1 text-xs text-[#003049]/60 dark:text-gray-400">
-                <Clock size={12} />
+              <div className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-muted">
+                <Clock size={13} aria-hidden="true" />
                 <span>{nextOffPeriod.daysUntil} hari lagi</span>
               </div>
             </>
           ) : (
-            <p className="text-sm text-[#003049]/50 dark:text-gray-500 mt-1">-</p>
+            <p className="mt-2 text-sm text-muted">Belum ada</p>
           )}
         </div>
 
-        {/* Remaining Holidays */}
-        <div>
-          <p className="text-xs text-[#003049]/60 dark:text-gray-500">Sisa Libur Tahun Ini</p>
-          <p className="text-2xl font-bold text-[#c1121f] dark:text-[#669bbc] mt-1">
+        <div className="min-w-0 p-4">
+          <p className="text-xs font-semibold text-muted">Sisa Libur Tahun Ini</p>
+          <p className="mt-2 text-3xl font-black tabular-nums tracking-[-0.04em] text-foreground">
             {remainingHolidays}
           </p>
-          <p className="text-xs text-[#003049]/60 dark:text-gray-500">hari libur</p>
+          <p className="mt-1 flex items-center gap-1 text-xs font-semibold text-muted"><ArrowRight size={13} aria-hidden="true" /> hari libur</p>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

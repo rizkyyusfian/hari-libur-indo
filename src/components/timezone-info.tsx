@@ -27,19 +27,21 @@ export function TimezoneInfo() {
   if (!mounted) return null;
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-lg border border-[#003049]/20 dark:border-slate-700 p-3 shadow-sm">
-      <div className="flex items-center gap-2 mb-2">
-        <Clock size={16} className="text-[#669bbc]" />
-        <p className="text-xs font-medium text-[#003049] dark:text-gray-400">Zona Waktu Anda</p>
+    <section className="rounded-2xl border border-line bg-surface p-4 pop-shadow" aria-labelledby="timezone-title">
+      <div className="mb-2 flex items-center gap-2">
+        <span className="grid size-8 place-items-center rounded-lg bg-info text-white">
+          <Clock size={16} aria-hidden="true" />
+        </span>
+        <p id="timezone-title" className="text-xs font-extrabold uppercase tracking-[0.12em] text-info">Zona Waktu Anda</p>
       </div>
-      <p className="text-sm font-mono font-semibold text-[#003049] dark:text-gray-100">
+      <p className="font-mono text-sm font-bold tabular-nums text-foreground">
         {time}
       </p>
-      <p className="text-xs text-[#003049]/70 dark:text-gray-400 mt-1">
+      <p className="mt-1 text-xs font-medium text-muted">
         {timezone === 'WIB' && 'Waktu Indonesia Barat'}
         {timezone === 'WITA' && 'Waktu Indonesia Tengah'}
         {timezone === 'WIT' && 'Waktu Indonesia Timur'}
       </p>
-    </div>
+    </section>
   );
 }

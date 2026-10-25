@@ -97,10 +97,10 @@ export function HolidayApp({
     <section
       aria-label="Kalender interaktif hari libur"
       aria-busy={pending}
-      className="relative mt-8"
+      className="relative mt-8 sm:mt-10"
     >
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="space-y-6 lg:col-span-2">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3 lg:gap-6">
+        <div className="min-w-0 space-y-5 lg:col-span-2 lg:space-y-6">
           <Calendar
             holidays={holidays}
             viewMode={calendarViewMode}
@@ -120,40 +120,42 @@ export function HolidayApp({
           <DocumentReference documents={documents} loading={pending} />
         </div>
 
-        <div className="space-y-6 lg:col-span-1">
+        <aside className="min-w-0 space-y-5 lg:col-span-1 lg:space-y-6" aria-label="Ringkasan dan alat kalender">
           <SummaryCard holidays={holidays} />
           <TimezoneInfo />
           <ExportControls />
-        </div>
+        </aside>
       </div>
 
       {(pending || loadError) && (
-        <div className="absolute inset-0 z-40 flex min-h-72 items-start justify-center rounded-xl bg-white/95 p-6 pt-16 backdrop-blur-sm dark:bg-slate-950/95">
+        <div className="absolute inset-0 z-40 flex min-h-72 items-start justify-center rounded-2xl bg-background/95 p-4 pt-16 backdrop-blur-sm sm:p-6 sm:pt-20">
           <div
             role={loadError ? 'alert' : 'status'}
             aria-live="polite"
-            className={`w-full max-w-md rounded-xl border p-5 text-center shadow-lg ${
+            className={`w-full max-w-md rounded-2xl border p-5 text-center shadow-xl ${
               loadError
-                ? 'border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-100'
-                : 'border-[#669bbc]/30 bg-white text-[#003049] dark:border-slate-700 dark:bg-slate-900 dark:text-white'
+                ? 'border-primary/30 bg-surface text-foreground'
+                : 'border-info/30 bg-surface text-foreground'
             }`}
           >
             {loadError ? (
               <>
-                <AlertCircle className="mx-auto mb-3" size={28} aria-hidden="true" />
-                <p className="font-semibold">Data hari libur gagal dimuat</p>
-                <p className="mt-1 text-sm">{loadError}</p>
+                <span className="mx-auto mb-3 grid size-12 place-items-center rounded-xl bg-primary/12 text-primary">
+                  <AlertCircle size={26} aria-hidden="true" />
+                </span>
+                <p className="font-extrabold">Data hari libur gagal dimuat</p>
+                <p className="mt-1 text-sm leading-relaxed text-muted">{loadError}</p>
                 <button
                   type="button"
                   onClick={() => void loadYear(requestedYear)}
-                  className="mx-auto mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#003049] px-4 py-2 font-semibold text-white hover:bg-[#164457] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#669bbc] focus-visible:ring-offset-2 dark:bg-[#669bbc] dark:text-slate-950"
+                  className="focus-ring surface-transition mx-auto mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 font-bold text-white hover:-translate-y-0.5 hover:bg-primary-strong"
                 >
                   <RefreshCw size={17} aria-hidden="true" />
                   Coba lagi untuk {requestedYear}
                 </button>
               </>
             ) : (
-              <div className="flex items-center justify-center gap-3 font-semibold">
+              <div className="flex items-center justify-center gap-3 font-bold text-info">
                 <Loader2 className="animate-spin" size={22} aria-hidden="true" />
                 Memuat data hari libur {loadingYear}…
               </div>

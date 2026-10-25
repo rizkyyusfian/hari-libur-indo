@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Copyright, Info } from "lucide-react";
+import { ArrowUpRight, Copyright, Info } from "lucide-react";
 import Link from "next/link";
 import { Header } from "@/components/header";
 import { HolidayApp } from "@/components/holiday-app";
@@ -61,7 +61,7 @@ export default async function Home() {
   );
 
   return (
-    <div className="min-h-screen bg-white transition-colors dark:bg-slate-950">
+    <div className="min-h-screen bg-background text-foreground">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: websiteSchema }}
@@ -72,14 +72,18 @@ export default async function Home() {
       />
       <Header />
 
-      <main className="mx-auto max-w-6xl px-4 py-8">
-        <header className="max-w-3xl">
-          <p className="text-sm font-semibold uppercase tracking-wide text-[#58717b] dark:text-[#b7c9d0]">
-            Kalender nasional dan Papua Barat Daya
-          </p>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#003049] dark:text-white sm:text-4xl">
-            Hari Libur Indonesia & Papua Barat Daya {year}
-          </h1>
+      <main id="main-content" className="mx-auto max-w-6xl px-4 py-7 sm:px-6 sm:py-10 lg:px-8">
+        <header className="relative w-full overflow-hidden rounded-2xl border border-line bg-surface px-5 py-8 pop-shadow sm:px-8 sm:py-10 lg:px-10 lg:py-12">
+          <div className="absolute -right-8 -top-12 size-32 rotate-12 rounded-3xl bg-accent/80" aria-hidden="true" />
+          <div className="absolute -bottom-16 right-24 size-28 -rotate-12 rounded-full bg-info-soft" aria-hidden="true" />
+          <div className="relative">
+            <h1 className="max-w-4xl text-balance text-3xl font-extrabold leading-[1.08] tracking-[-0.045em] text-foreground sm:text-5xl lg:text-[3.4rem]">
+              Rencanakan hari baikmu, <span className="text-info">lebih awal.</span>
+            </h1>
+            <p className="mt-5 max-w-3xl text-pretty text-sm leading-6 text-muted sm:text-base sm:leading-7">
+              Cek hari libur nasional, cuti bersama, kalender Papua Barat Daya, dan long weekend dalam satu tampilan yang mudah dibaca.
+            </p>
+          </div>
         </header>
 
         <HolidayApp
@@ -90,11 +94,11 @@ export default async function Home() {
           initialError={initialError}
         />
 
-        <footer className="mt-12 border-t border-[#003049]/10 pt-8 dark:border-slate-800">
-          <div className="flex flex-col items-center justify-between gap-4 text-sm text-[#405c68] dark:text-gray-400 sm:flex-row">
+        <footer className="mt-12 border-t border-line pt-8">
+          <div className="flex flex-col items-center justify-between gap-4 text-sm text-muted sm:flex-row">
             <Link
               href="/about"
-              className="flex items-center gap-1 transition hover:text-[#c1121f] dark:hover:text-[#8ecae6]"
+              className="focus-ring surface-transition flex min-h-11 items-center gap-2 rounded-lg px-2 font-semibold hover:text-primary"
             >
               <Info size={14} aria-hidden="true" />
               Tentang
@@ -107,10 +111,11 @@ export default async function Home() {
               href="https://rizkyyusfian.tech"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 transition hover:text-[#c1121f] dark:hover:text-[#8ecae6]"
+              className="focus-ring surface-transition inline-flex min-h-11 items-center gap-2 rounded-lg px-2 font-semibold hover:text-primary"
             >
               <Copyright size={14} aria-hidden="true" />
               MRYY 2026
+              <ArrowUpRight size={14} aria-hidden="true" />
             </a>
           </div>
         </footer>

@@ -19,12 +19,14 @@ export default function DocumentReference({ documents, loading = false }: Docume
   const regionalDocs = documents.filter(document => document.type === 'regional');
 
   return (
-    <div className="p-3 bg-gray-50 dark:bg-slate-800/50 rounded-lg border border-[#003049]/10 dark:border-slate-700">
+    <aside className="rounded-2xl border border-line bg-surface-subtle p-4" aria-label="Dokumen sumber kalender">
       <div className="flex items-start gap-3">
-        <FileText className="text-[#c1121f] dark:text-[#c1121f] flex-shrink-0 mt-0.5" size={18} />
-        <div className="text-sm text-[#003049] dark:text-gray-300 space-y-3">
+        <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+          <FileText size={18} aria-hidden="true" />
+        </span>
+        <div className="min-w-0 space-y-3 text-sm text-muted">
           <div>
-            <p className="font-medium text-[#003049] dark:text-gray-100">
+            <p className="font-semibold text-foreground">
               Berdasarkan{' '}
               {nationalDocs.length > 0 && <DocumentGroup title="" documents={nationalDocs} inline />}
             </p>
@@ -35,7 +37,7 @@ export default function DocumentReference({ documents, loading = false }: Docume
           )}
         </div>
       </div>
-    </div>
+    </aside>
   );
 }
 
@@ -58,10 +60,10 @@ function DocumentGroup({
               href={document.file_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#003049] dark:text-[#669bbc] font-medium hover:underline inline-flex items-center gap-1 align-middle"
+              className="focus-ring inline-flex items-center gap-1 rounded font-bold text-info hover:underline"
             >
               <span>{document.title}</span>
-              <ExternalLink size={14} />
+              <ExternalLink size={14} aria-hidden="true" />
             </a>
           </span>
         ))}
@@ -71,7 +73,7 @@ function DocumentGroup({
 
   return (
     <div>
-      <p className="text-xs font-semibold uppercase tracking-wide text-[#003049]/60 dark:text-gray-500 mb-1">
+      <p className="mb-1 text-xs font-extrabold uppercase tracking-wide text-muted">
         {title}
       </p>
       <div className="space-y-1.5">
@@ -81,11 +83,11 @@ function DocumentGroup({
               href={document.file_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#003049] dark:text-[#669bbc] font-medium hover:underline inline-flex items-center gap-1"
+              className="focus-ring inline-flex items-center gap-1 rounded font-bold text-info hover:underline"
             >
               {/* <span>{getDocumentKindLabel(document.document_kind)}: {document.title}</span> */}
               <span>{document.title}</span>
-              <ExternalLink size={14} />
+              <ExternalLink size={14} aria-hidden="true" />
             </a>
             {/* {document.summary && (
               <p className="text-xs text-[#003049]/60 dark:text-gray-400">
